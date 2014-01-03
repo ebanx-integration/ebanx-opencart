@@ -1,8 +1,9 @@
 <?php
 
-class ModelPaymentEbanx extends Model {
-
-	public function install() {
+class ModelPaymentEbanx extends Model
+{
+	public function install()
+    {
 		$this->db->query("
             CREATE TABLE `" . DB_PREFIX . "order_ebanx` (
                 `order_id` int(11) NOT NULL,
@@ -12,10 +13,8 @@ class ModelPaymentEbanx extends Model {
         ");
 	}
 
-	public function uninstall() {
+	public function uninstall()
+    {
         $this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "order_ebanx`;");
 	}
-
 }
-
-?>
