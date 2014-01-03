@@ -1,6 +1,6 @@
 # EBANX OpenCart Payment Gateway Extension
 
-This plugin enables you to integrate your OpenCart store with the EBANX payment gateway.
+This plugin allows you to integrate your OpenCart store with the EBANX payment gateway.
 It includes support to installments and custom interest rates.
 
 ## Installation
