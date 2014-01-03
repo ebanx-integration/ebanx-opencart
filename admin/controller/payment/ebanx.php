@@ -1,17 +1,57 @@
 <?php
 
+/**
+ * Copyright (c) 2013, EBANX Tecnologia da Informação Ltda.
+ *  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * Neither the name of EBANX nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * EBANX settings controller
+ */
 class ControllerPaymentEbanx extends Controller
 {
+	/**
+	 * Error messages
+	 * @var array
+	 */
 	private $error = array();
 
+	/**
+	 * EBANX settings page
+	 * @return void
+	 */
 	public function index()
 	{
 		$this->language->load('payment/ebanx');
-
 		$this->document->setTitle($this->language->get('heading_title'));
-
 		$this->load->model('setting/setting');
 
+		// Saves the new settings
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate())
 		{
 			$this->model_setting_setting->editSetting('ebanx', $this->request->post);
@@ -94,8 +134,19 @@ class ControllerPaymentEbanx extends Controller
    		);
 
 		$this->data['action'] = $this->url->link('payment/ebanx', 'token=' . $this->session->data['token'], 'SSL');
-
 		$this->data['cancel'] = $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL');
+
+		// Default settings values
+		if (!$this->config->has('ebanx_merchant_key'))
+		{
+			$this->config->set('ebanx_order_status_ca_id', 7);
+			$this->config->set('ebanx_order_status_co_id', 2);
+			$this->config->set('ebanx_order_status_op_id', 1);
+			$this->config->set('ebanx_order_status_pe_id', 1);
+			$this->config->set('ebanx_sort_order', 1);
+			$this->config->set('ebanx_enable_installments', 0);
+			$this->config->set('ebanx_max_installments', 6);
+		}
 
 		if (isset($this->request->post['ebanx_merchant_key']))
 		{
@@ -225,6 +276,10 @@ class ControllerPaymentEbanx extends Controller
 		$this->response->setOutput($this->render());
 	}
 
+	/**
+	 * Validates the new settings
+	 * @return boolean
+	 */
 	protected function validate()
 	{
 		if (!$this->user->hasPermission('modify', 'payment/ebanx'))
@@ -240,12 +295,20 @@ class ControllerPaymentEbanx extends Controller
 		return !$this->error;
 	}
 
+	/**
+	 * Installs the EBANX extension
+	 * @return void
+	 */
 	public function install()
 	{
   	$this->load->model('payment/ebanx');
     $this->model_payment_ebanx->install();
 	}
 
+	/**
+	 * Uninstalls the EBANX extension
+	 * @return void
+	 */
 	public function uninstall()
 	{
     $this->load->model('payment/ebanx');
