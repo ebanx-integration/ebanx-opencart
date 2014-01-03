@@ -73,7 +73,7 @@ class ControllerPaymentEbanx extends Controller
 			, 'zipcode' 		  => $order_info['payment_postcode']
 			, 'phone_number'  => $order_info['telephone']
 			, 'payment_type_code' 		=> '_all'
-			, 'merchant_payment_code' => $order_info['order_id'] . '_'
+			, 'merchant_payment_code' => $order_info['order_id']
 		);
 
 		// Installments
