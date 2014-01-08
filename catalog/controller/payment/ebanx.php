@@ -62,12 +62,36 @@ class ControllerPaymentEbanx extends Controller
 		$this->data['button_confirm'] = $this->language->get('button_confirm');
 
 		$this->data['enable_installments'] = $this->config->get('ebanx_enable_installments');
-		$this->data['max_installments']    = $this->config->get('ebanx_max_installments');
 
 		// Order total with interest
 		$interest    = $this->config->get('ebanx_installments_interest');
 		$order_total = ($order_info['total'] * (100 + floatval($interest))) / 100.0;
 		$this->data['order_total_interest'] = $order_total;
+
+		// Enforce minimum installment value (R$20)
+		$maxInstallments = $this->config->get('ebanx_max_installments');
+		$currencyCode    = strtoupper($order_info['currency_code']);
+
+		switch ($currencyCode)
+    {
+      case 'USD':
+        $totalReal = $order_total * 2.5;
+        break;
+      case 'EUR':
+        $totalReal = $order_total * 3.4;
+        break;
+      case 'BRL':
+      default:
+        $totalReal = $order_total;
+        break;
+    }
+
+    if (($totalReal / 20) < $maxInstallments)
+    {
+	    $maxInstallments = floor($totalReal / 20);
+    }
+
+		$this->data['max_installments'] = $maxInstallments;
 
 		// Form translations
 		$this->language->load('payment/ebanx');

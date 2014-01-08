@@ -46,4 +46,5 @@ git clone --recursive https://github.com/ebanx/ebanx-woocommerce.git
 11. That's all!
 
 ## Changelog
+1.0.1: included EUR conversion in minimum installment value
 1.0.0: first release
