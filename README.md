@@ -46,4 +46,4 @@ git clone --recursive https://github.com/ebanx/ebanx-woocommerce.git
 11. That's all!
 
 ## Changelog
-_1.0.0_: first release
+1.0.0: first release
