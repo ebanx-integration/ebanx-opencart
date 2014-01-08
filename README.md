@@ -7,7 +7,7 @@ It includes support to installments and custom interest rates.
 ### Source
 1. Clone the git repo to your OpenCart root folder
 ```
-git clone --recursive https://github.com/ebanx/ebanx-woocommerce.git
+git clone --recursive https://github.com/ebanx/ebanx-opencart.git
 ```
 2. Visit your OpenCart payment settings at **Extensions > Payment**.
 3. Click the _Install_ link, and wait for the extension installation to complete.
