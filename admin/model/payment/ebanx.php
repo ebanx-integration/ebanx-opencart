@@ -41,11 +41,22 @@ class ModelPaymentEbanx extends Model
      */
 	public function install()
     {
+        // Create table to store orders EBANX hash
 		$this->db->query("
             CREATE TABLE `" . DB_PREFIX . "order_ebanx` (
                 `order_id` int(11) NOT NULL,
                 `ebanx_hash` varchar(255) NOT NULL,
                 PRIMARY KEY `order_id` (`order_id`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+        ");
+
+        // Create table to store customer data (CPF, DOB)
+        $this->db->query("
+            CREATE TABLE `" . DB_PREFIX . "customer_ebanx` (
+                `customer_id` int(11)     NOT NULL,
+                `cpf`         varchar(32) NOT NULL,
+                `dob`         varchar(16) NOT NULL,
+                PRIMARY KEY `customer_id` (`customer_id`)
             ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
         ");
 	}
@@ -57,5 +68,6 @@ class ModelPaymentEbanx extends Model
 	public function uninstall()
     {
         $this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "order_ebanx`;");
+        $this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "customer_ebanx`;");
 	}
 }

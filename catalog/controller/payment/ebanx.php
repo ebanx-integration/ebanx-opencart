@@ -47,6 +47,7 @@ class ControllerPaymentEbanx extends Controller
 		\Ebanx\Config::set(array(
 		    'integrationKey' => $this->config->get('ebanx_merchant_key')
 		  , 'testMode'       => ($this->config->get('ebanx_mode') == 'test')
+		  , 'directMode'		 => ($this->config->get('ebanx_direct') == 1)
 		));
 	}
 
@@ -103,14 +104,23 @@ class ControllerPaymentEbanx extends Controller
 		$this->data['order_total']   = $order_info['total'];
 		$this->data['currency_code'] = $order_info['currency_code'];
 
-		// Render a custom template if it's available
-		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx.tpl'))
+		$this->data['ebanx_direct_cards'] = $this->config->get('ebanx_direct_cards');
+
+		// Render normal or direct checkout page
+		$template = 'ebanx';
+		if ($this->config->get('ebanx_direct') == 1)
 		{
-			$this->template = $this->config->get('config_template') . '/template/payment/ebanx.tpl';
+			$template .= '_direct';
+		}
+
+		// Render a custom template if it's available
+		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/' . $template . '.tpl'))
+		{
+			$this->template = $this->config->get('config_template') . '/template/payment/' . $template . '.tpl';
 		}
 		else
 		{
-			$this->template = 'default/template/payment/ebanx.tpl';
+			$this->template = 'default/template/payment/' . $template . '.tpl';
 		}
 
 		$this->render();

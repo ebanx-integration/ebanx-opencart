@@ -30,6 +30,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+require_once DIR_SYSTEM . 'library/ebanx-php/src/autoload.php';
+
 /**
  * EBANX settings controller
  */
@@ -40,6 +42,19 @@ class ControllerPaymentEbanx extends Controller
 	 * @var array
 	 */
 	private $error = array();
+
+	/**
+	 * Initialize the EBANX settings before usage
+	 * @return void
+	 */
+	protected function _setupEbanx()
+	{
+		\Ebanx\Config::set(array(
+		    'integrationKey' => $this->config->get('ebanx_merchant_key')
+		  , 'testMode'       => ($this->config->get('ebanx_mode') == 'test')
+		  , 'directMode'		 => ($this->config->get('ebanx_direct') == 1)
+		));
+	}
 
 	/**
 	 * EBANX settings page
@@ -81,7 +96,8 @@ class ControllerPaymentEbanx extends Controller
 		$this->data['entry_enable_installments']   = $this->language->get('entry_enable_installments');
 		$this->data['entry_max_installments']      = $this->language->get('entry_max_installments');
 		$this->data['entry_installments_interest'] = $this->language->get('entry_installments_interest');
-
+		$this->data['entry_enable_direct'] 				 = $this->language->get('entry_enable_direct');
+		$this->data['entry_update_methods'] 		   = $this->language->get('entry_update_methods');
 
 		$this->data['button_save']   = $this->language->get('button_save');
 		$this->data['button_cancel'] = $this->language->get('button_cancel');
@@ -139,6 +155,7 @@ class ControllerPaymentEbanx extends Controller
 		// Default settings values
 		if (!$this->config->has('ebanx_merchant_key'))
 		{
+			$this->config->set('ebanx_status', 1);
 			$this->config->set('ebanx_order_status_ca_id', 7);
 			$this->config->set('ebanx_order_status_co_id', 2);
 			$this->config->set('ebanx_order_status_op_id', 1);
@@ -146,6 +163,8 @@ class ControllerPaymentEbanx extends Controller
 			$this->config->set('ebanx_sort_order', 1);
 			$this->config->set('ebanx_enable_installments', 0);
 			$this->config->set('ebanx_max_installments', 6);
+			$this->config->set('ebanx_direct', 0);
+			$this->config->set('ebanx_direct_cards', 0);
 		}
 
 		if (isset($this->request->post['ebanx_merchant_key']))
@@ -218,7 +237,6 @@ class ControllerPaymentEbanx extends Controller
 		}
 
 		$this->load->model('localisation/geo_zone');
-
 		$this->data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
 
 		if (isset($this->request->post['ebanx_status']))
@@ -257,7 +275,6 @@ class ControllerPaymentEbanx extends Controller
 			$this->data['ebanx_installments_interest'] = $this->config->get('ebanx_installments_interest');
 		}
 
-
 		if (isset($this->request->post['ebanx_sort_order']))
 		{
 			$this->data['ebanx_sort_order'] = $this->request->post['ebanx_sort_order'];
@@ -266,6 +283,28 @@ class ControllerPaymentEbanx extends Controller
 		{
 			$this->data['ebanx_sort_order'] = $this->config->get('ebanx_sort_order');
 		}
+
+		if (isset($this->request->post['ebanx_direct']))
+		{
+			$this->data['ebanx_direct'] = $this->request->post['ebanx_direct'];
+		}
+		else
+		{
+			$this->data['ebanx_direct'] = $this->config->get('ebanx_direct');
+		}
+
+		if (isset($this->request->post['ebanx_direct']))
+		{
+			$this->data['ebanx_direct_cards'] = $this->request->post['ebanx_direct_cards'];
+		}
+		else
+		{
+			$this->data['ebanx_direct_cards'] = (in_array($this->config->get('ebanx_direct_cards'), array(0, 1))) ? $this->config->get('ebanx_direct_cards') : 0;
+		}
+
+		// Payment update URL
+		$this->data['ebanx_update_payments'] = $this->config->get('config_url')
+			. 'admin/index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];
 
 		$this->template = 'payment/ebanx.tpl';
 		$this->children = array(
@@ -294,6 +333,62 @@ class ControllerPaymentEbanx extends Controller
 
 		return !$this->error;
 	}
+
+	/**
+	 * Update the payment methods accepted in direct mode
+	 * @return void
+	 */
+	public function updatePaymentMethods()
+  {
+		$this->load->model('setting/setting');
+  	$this->_setupEbanx();
+
+  	$paymentData = array(
+      'mode'      => 'full',
+      'operation' => 'request',
+      'payment'   => array(
+	      'merchant_payment_code' => time(),
+  	    'amount_total'      => 100,
+        'currency_code'     => 'USD',
+        'name'              => 'ROBERTO CARLOS',
+        'email'             => 'roberto@example.com',
+        'birth_date'        => '12/04/1979',
+        'document'          => '88282672165',
+        'address'           => 'AV MIRACATU',
+        'street_number'     => '2993',
+        'street_complement' => 'CJ 5',
+        'city'              => 'CURITIBA',
+        'state'             => 'PR',
+        'zipcode'           => '81500000',
+        'country'           => 'br',
+        'phone_number'      => '4132332354',
+        'payment_type_code' => 'boleto'
+      )
+    );
+
+  	try
+  	{
+    	$request = \Ebanx\Ebanx::doRequest($paymentData);
+
+	    if ($request->status == 'SUCCESS')
+	    {
+	    	echo 'Direct mode: boleto and credit cards are enabled.';
+	    	$this->model_setting_setting->editSettingValue('ebanx', 'ebanx_direct_cards', 1);
+	    }
+	    else
+	    {
+	    	echo 'Direct mode: only boleto is enabled.';
+	    	$this->model_setting_setting->editSettingValue('ebanx', 'ebanx_direct_cards', 0);
+	    }
+	  }
+	  catch (Exception $e)
+	  {
+	  	echo 'Direct mode is disabled for your merchant account.';
+	  }
+
+    exit;
+  }
+
 
 	/**
 	 * Installs the EBANX extension

@@ -52,19 +52,19 @@
       <table class="form">
         <tbody>
           <tr>
-            <td><?= $entry_installments_number ?></td>
+            <td><?php echo $entry_installments_number ?></td>
             <td>
               <select name="instalments" id="ebanx_installments_number">
-                <option value="1">1x de <?= $this->currency->format($order_total) ?></option>
+                <option value="1">1x de <?php echo $this->currency->format($order_total) ?></option>
 
                 <?php for ($i = 2; $i <= $max_installments; $i++): ?>
-                  <option value="<?= $i ?>"><?= $i ?>x de <?= $this->currency->format($order_total_interest / floatval($i)) ?></option>
+                  <option value="<?php echo $i ?>"><?php echo $i ?>x de <?php echo $this->currency->format($order_total_interest / floatval($i)) ?></option>
                 <?php endfor ?>
               </select>
             </td>
           </tr>
           <tr id="ebanx_installments_cards">
-            <td><?= $entry_installments_cc ?></td>
+            <td><?php echo $entry_installments_cc ?></td>
             <td>
               <select name="payment_type_code" id="ebanx_installments_card">
                 <option value="visa">Visa</option>

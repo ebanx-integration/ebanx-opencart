@@ -54,6 +54,8 @@ $_['entry_sort_order']      = 'Sort Order:';
 $_['entry_enable_installments']   = 'Installments:';
 $_['entry_max_installments']      = 'Maximum Installments:';
 $_['entry_installments_interest'] = 'Installments Interest Rate:';
+$_['entry_enable_direct']         = 'Direct Mode';
+$_['entry_update_methods']        = 'Update Payment Methods';
 
 $_['error_permission']   = 'Warning: You do not have permission to modify the EBANX payment configuration!';
 $_['error_merchant_key'] = 'Merchant Key required! If you do not have one please contact us at ebanx.com/contact';

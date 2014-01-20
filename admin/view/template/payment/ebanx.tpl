@@ -20,6 +20,20 @@
       <form action="<?php echo $action ?>" method="post" enctype="multipart/form-data" id="form">
         <table class="form">
           <tr>
+            <td><?php echo $entry_status ?></td>
+            <td><select name="ebanx_status">
+                <?php if ($ebanx_status): ?>
+                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
+                  <option value="0"><?php echo $text_disabled ?></option>
+                <?php else: ?>
+                  <option value="1"><?php echo $text_enabled ?></option>
+                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
+                <?php endif ?>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
             <td><span class="required">*</span> <?php echo $entry_merchant_key ?></td>
             <td><input type="text" name="ebanx_merchant_key" value="<?php echo $ebanx_merchant_key ?>" size="110" />
               <?php if ($error_merchant_key): ?>
@@ -145,9 +159,9 @@
           </tr>
 
           <tr>
-            <td><?php echo $entry_status ?></td>
-            <td><select name="ebanx_status">
-                <?php if ($ebanx_status): ?>
+            <td><?php echo $entry_enable_direct ?></td>
+            <td><select name="ebanx_direct">
+                <?php if ($ebanx_direct): ?>
                   <option value="1" selected="selected"><?php echo $text_enabled ?></option>
                   <option value="0"><?php echo $text_disabled ?></option>
                 <?php else: ?>
@@ -155,6 +169,15 @@
                   <option value="0" selected="selected"><?php echo $text_disabled ?></option>
                 <?php endif ?>
               </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td><?php echo $entry_update_methods ?></td>
+            <td>
+              <input type="hidden" name="ebanx_direct_cards" value="<?php echo intval($ebanx_direct_cards) ?>" />
+              <p>Current methods: <strong><?php echo ($ebanx_direct_cards == 1) ? 'boleto, credit card' : 'boleto' ?></strong>
+              <p><a class="button" id="update-payment-methods">Update</a></p>
             </td>
           </tr>
 
@@ -167,4 +190,21 @@
     </div>
   </div>
 </div>
+
+<script>
+$(document).ready(function() {
+  /**
+   * Updates the direct mode payment methods via AJAX and reloads the page
+   * @return {void}
+   */
+  $('#update-payment-methods').click(function() {
+    $('html, body').css('cursor', 'wait');
+    $.get('<?php echo $ebanx_update_payments ?>', function(r) {
+      alert(r);
+      window.location.reload();
+    });
+  });
+});
+</script>
+
 <?php echo $footer ?>
