@@ -111,6 +111,19 @@ class ControllerPaymentEbanx extends Controller
 		if ($this->config->get('ebanx_direct') == 1)
 		{
 			$template .= '_direct';
+
+			// Preload customer data (CPF and DOB)
+			$this->load->model('customer/ebanx');
+    	$info = $this->model_customer_ebanx->findByCustomerId($this->customer->getId());
+
+    	$this->data['ebanx_cpf'] = '';
+  		$this->data['ebanx_dob'] = '';
+
+    	if ($info)
+    	{
+    		$this->data['ebanx_cpf'] = $info['cpf'];
+    		$this->data['ebanx_dob'] = $info['dob'];
+    	}
 		}
 
 		// Render a custom template if it's available
@@ -184,6 +197,224 @@ class ControllerPaymentEbanx extends Controller
 	}
 
 	/**
+	 * EBANX direct checkout action. Redirects to the success URI.
+	 * @return void
+	 */
+	public function checkoutDirect()
+	{
+		$this->_setupEbanx();
+		$this->load->model('checkout/order');
+		$this->load->model('customer/ebanx');
+
+		$order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
+
+		// Get full address
+		$address = $order_info['payment_address_1'];
+		if (!!$order_info['payment_address_2'])
+		{
+			$address .= ', ' . $order_info['payment_address_2'];
+		}
+
+		$params = array(
+	      'mode'      => 'full'
+	    , 'operation' => 'request'
+	    , 'payment'   => array(
+	          'name'              => $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
+	        , 'document'          => preg_replace('/\D/', '', $this->request->post['ebanx']['cpf'])
+	        , 'birth_date'        => $this->request->post['ebanx']['dob']
+	        , 'email'             => $order_info['email']
+	        , 'phone_number'      => $order_info['telephone']
+	        , 'currency_code'     => $this->config->get('config_currency')
+	        , 'amount_total'      => $order_info['total']
+	        , 'payment_type_code' => $this->request->post['ebanx']['method']
+	        , 'merchant_payment_code' => $order_info['order_id']
+	        , 'zipcode'           => $order_info['payment_postcode']
+	        , 'address'           => $address
+	        , 'street_number'     => preg_replace('/[\D]/', '', $address)
+	        , 'city'              => $order_info['payment_city']
+	        , 'state'             => $order_info['payment_zone_code']
+	        , 'country'           => 'br'
+	    )
+	  );
+
+		// Add installments to order
+		if ($this->request->post['ebanx']['method'] == 'creditcard' &&
+			  isset($this->request->post['ebanx']['installments']) && intval($this->request->post['ebanx']['installments']) > 1 &&
+			  $this->request->post['ebanx']['cc_type'] != 'discover')
+		{
+			$params['payment']['instalments']       = $this->request->post['ebanx']['installments'];
+			$params['payment']['payment_type_code'] = $this->request->post['ebanx']['cc_type'];
+
+			// Add interest to the order total
+			$interest    = $this->config->get('ebanx_installments_interest');
+			$order_total = ($order_info['total'] * (100 + floatval($interest))) / 100.0;
+			$params['payment']['amount_total'] = number_format($order_total, 2, '.', '');
+		}
+
+    // Add credit card fields if the method is credit card
+    if ($this->request->post['ebanx']['method'] == 'creditcard')
+    {
+        $params['payment']['payment_type_code'] = $this->request->post['ebanx']['cc_type'];
+        $params['payment']['creditcard'] = array(
+            'card_name'     => $this->request->post['ebanx']['cc_name']
+          , 'card_number'   => $this->request->post['ebanx']['cc_number']
+          , 'card_cvv'      => $this->request->post['ebanx']['cc_cvv']
+          , 'card_due_date' => str_pad($this->request->post['ebanx']['cc_exp']['month'], 2, '0', STR_PAD_LEFT)
+          										 . '/' . $this->request->post['ebanx']['cc_exp']['year']
+        );
+    }
+
+    // Persist the customer DOB and CPF
+    $data = array(
+  		  'cpf' => $params['payment']['document']
+  		, 'dob' => $params['payment']['birth_date']
+  	);
+
+  	$id = $this->customer->getId();
+    if ($this->model_customer_ebanx->findByCustomerId($id))
+    {
+    	$this->model_customer_ebanx->update($id, $data);
+    }
+    else
+    {
+    	$this->model_customer_ebanx->insert($id, $data);
+    }
+
+    // Do the payment request
+		$response = \Ebanx\Ebanx::doRequest($params);
+
+		if ($response->status == 'SUCCESS')
+		{
+			$this->load->model('payment/ebanx');
+			$this->model_payment_ebanx->setPaymentHash($order_info['order_id'], $response->payment->hash);
+
+			$this->load->model('checkout/order');
+
+			$this->model_checkout_order->confirm($this->session->data['order_id'], $this->config->get('ebanx_order_status_op_id'));
+
+			// If payment method is boleto, redirect to boleto page
+			if ($response->payment->payment_type_code == 'boleto')
+			{
+				echo $this->_getBaseUrl() . 'index.php?route=payment/ebanx/boleto/&hash=' . $response->payment->hash;
+			}
+			// Else, redirect to callback page
+			else
+			{
+				echo $this->_getBaseUrl() . 'index.php?route=payment/ebanx/callback/&hash=' . $response->payment->hash;
+			}
+		}
+		else
+		{
+			// Display the EBANX error message or the default one
+			if (isset($response->status_message))
+			{
+				echo $response->status_message;
+			}
+			else
+			{
+				echo 'Unknown error, please contact the store owner.';
+			}
+		}
+
+		die();
+	}
+
+	/**
+	 * Shows the customer the boleto printing link
+	 * @return void
+	 */
+	public function boleto()
+	{
+		$this->_setupEbanx();
+
+		$hash  = $this->request->get['hash'];
+		$query = \Ebanx\Ebanx::doQuery(array('hash' => $hash));
+
+		// Renders the default success page with the "Print Boleto" button
+		if ($query->status == 'SUCCESS')
+		{
+			$this->language->load('checkout/success');
+
+			$this->document->setTitle($this->language->get('heading_title'));
+
+			$this->data['breadcrumbs'] = array();
+
+			$this->data['breadcrumbs'][] = array(
+				'href'      => $this->url->link('common/home'),
+				'text'      => $this->language->get('text_home'),
+				'separator' => false
+			);
+
+			$this->data['breadcrumbs'][] = array(
+				'href'      => $this->url->link('checkout/cart'),
+				'text'      => $this->language->get('text_basket'),
+				'separator' => $this->language->get('text_separator')
+			);
+
+			$this->data['breadcrumbs'][] = array(
+				'href'      => $this->url->link('checkout/checkout', '', 'SSL'),
+				'text'      => $this->language->get('text_checkout'),
+				'separator' => $this->language->get('text_separator')
+			);
+
+			$this->data['breadcrumbs'][] = array(
+				'href'      => $this->url->link('checkout/success'),
+				'text'      => $this->language->get('text_success'),
+				'separator' => $this->language->get('text_separator')
+			);
+
+			$this->data['heading_title'] = $this->language->get('heading_title');
+
+			if ($this->customer->isLogged())
+			{
+				$this->data['text_message'] = sprintf($this->language->get('text_customer'), $this->url->link('account/account', '', 'SSL'), $this->url->link('account/order', '', 'SSL'), $this->url->link('account/download', '', 'SSL'), $this->url->link('information/contact'));
+			}
+			else
+			{
+				$this->data['text_message'] = sprintf($this->language->get('text_guest'), $this->url->link('information/contact'));
+			}
+
+			$this->data['button_continue'] = $this->language->get('button_continue');
+			$this->data['continue'] = $this->url->link('common/home');
+
+			$this->data['boleto'] = $query->payment->boleto_url;
+
+			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_boleto.tpl'))
+			{
+				$this->template = $this->config->get('config_template') . '/template/payment/ebanx_boleto.tpl';
+			}
+			else
+			{
+				$this->template = 'default/template/payment/ebanx_boleto.tpl';
+			}
+
+			$this->children = array(
+				  'common/column_left'
+				, 'common/column_right'
+				, 'common/content_top'
+				, 'common/content_bottom'
+				, 'common/footer'
+				, 'common/header'
+			);
+
+			$this->response->setOutput($this->render());
+		}
+		else
+		{
+			$this->redirect($this->url->link('checkout/success'));
+		}
+	}
+
+	/**
+	 * Gets the store base URL
+	 * @return string
+	 */
+	protected function _getBaseUrl()
+	{
+		return $this->config->get('config_url');
+	}
+
+	/**
 	 * Callback action. It's called when returning from EBANX.
 	 * @return void
 	 */
@@ -227,18 +458,7 @@ class ControllerPaymentEbanx extends Controller
 				$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_pe_id'));
 			}
 
-			$this->data['continue'] = $this->url->link('checkout/success');
-
-			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_success.tpl'))
-			{
-				$this->template = $this->config->get('config_template') . '/template/payment/ebanx_success.tpl';
-			}
-			else
-			{
-				$this->template = 'default/template/payment/ebanx_success.tpl';
-			}
-
-			$this->response->setOutput($this->render());
+			$this->redirect($this->url->link('checkout/success'));
 		}
 		else
 		{

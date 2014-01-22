@@ -30,53 +30,125 @@ ul.payment-methods li label img.active {
 #ebanx-error {
   display: none;
 }
+#button-confirm {
+  cursor: pointer;
+}
 </style>
 
 <script>
+    /**
+     * Shows an error message and focuses on the element with errors
+     * @param  {string} message The error message
+     * @param  {selector} elm   The selector of the element
+     * @return {boolean}
+     */
     var showError = function(message, elm) {
       $('#ebanx-error').text(message).show();
-      elm.focus();
+
+      if (elm) {
+        elm.focus();
+      }
+
       return false;
     };
 
+    /**
+     * Hides the error message and clears its text
+     * @return {[type]} [description]
+     */
     var hideError = function() {
       $('#ebanx-error').text('').hide();
     };
 
+    /**
+     * Validates the CPF number
+     * @param  {string} cpf The CPF number
+     * @return {boolean}
+     */
     var validCpf = function(cpf) {
-      return true;
+      var digits = cpf.replace(/[\D]/g, '')
+        , dv1, dv2, sum, mod;
+
+      if (digits.length == 11) {
+        d = digits.split('');
+
+        sum = d[0] * 10 + d[1] * 9 + d[2] * 8 + d[3] * 7 + d[4] * 6 + d[5] * 5 + d[6] * 4 + d[7] * 3 + d[8] * 2;
+        mod = sum % 11;
+        dv1 = (11 - mod < 10 ? 11 - mod : 0);
+
+        sum = d[0] * 11 + d[1] * 10 + d[2] * 9 + d[3] * 8 + d[4] * 7 + d[5] * 6 + d[6] * 5 + d[7] * 4 + d[8] * 3 + dv1 * 2;
+        mod = sum % 11;
+        dv2 = (11 - mod < 10 ? 11 - mod : 0);
+
+        return dv1 == d[9] && dv2 == d[10];
+      }
+
+      return false;
     };
 
+    /**
+     * Validates the credit card number using the Luhn algorithm
+     * @param  {string} value The credit card number
+     * @return {boolean}
+     */
+    var validCreditCard = function(value) {
+      value = value.replace(/\D/g, '');
+
+      var nCheck = 0
+        , nDigit = 0
+        , bEven  = false;
+
+      for (var n = value.length - 1; n >= 0; n--) {
+        var cDigit = value.charAt(n)
+          , nDigit = parseInt(cDigit, 10);
+
+        if (bEven) {
+          if ((nDigit *= 2) > 9) {
+            nDigit -= 9;
+          }
+        }
+
+        nCheck += nDigit;
+        bEven  = !bEven;
+      }
+
+      return (nCheck % 10) == 0 && nCheck > 0;
+    };
+
+    /**
+     * Validates the EBANX input fields
+     * @return {boolean}
+     */
     var validateEbanx = function() {
       hideError();
 
       var cpf = $('#ebanx_cpf')
         , dob = $('#ebanx_dob');
 
-      if (cpf.val().length < 11 || !validCpf(cpf.val())) {
+      if (!validCpf(cpf.val())) {
         return showError('CPF is invalid.', cpf);
       }
 
       if (dob.val().length != 10) {
-        return showError('Date of birth is invalid.', dob);
+        return showError('Date of Birth is invalid.', dob);
       }
 
       // If payment is via credit card, validate its fields
       if ($('#ebanx_method_cc').is(':checked')) {
         var ccName   = $("input[name='ebanx[cc_name]']")
-          , ccNumber = $("input[name='ebanx[cc_number]'']")
+          , ccNumber = $("input[name='ebanx[cc_number]']")
           , ccCVV    = $("input[name='ebanx[cc_cvv]']")
-          , ccType   = $("input[name='ebanx[cc_type]']")
-          , ccExpMonth     = $("input[name='ebanx[cc_exp][month]']")
-          , ccExpYear      = $("input[name='ebanx[cc_exp][year]'']")
-          , ccInstallments = $("input[name='ebanx[installments]']");
+          , ccType   = $("select[name='ebanx[cc_type]']")
+          , ccExpMonth     = $("select[name='ebanx[cc_exp][month]']")
+          , ccExpYear      = $("select[name='ebanx[cc_exp][year]']")
+          , ccInstallments = $("select[name='ebanx[installments]']");
 
         if (ccName.val().length == 0) {
           return showError('Name on Card must not be empty.', ccName);
         }
 
-        if (ccNumber.length < 12 || ccNumber.length > 19) {
-          return showError('Credit Card Number is incorrect.')
+        if (!validCreditCard(ccNumber.val())) {
+          return showError('The credit card Number is not valid.', ccNumber)
         }
 
         if (ccCVV.val().length < 3 || ccCVV.val().length > 4) {
@@ -91,7 +163,7 @@ ul.payment-methods li label img.active {
           return showError('The credit card expiration month is incorrect.', ccExpMonth);
         }
 
-        if (ccExpYear.val().length == 0 || ccExpYear.val() < 1910 || ccExpYear.val() > 2010) {
+        if (ccExpYear.val().length == 0 || ccExpYear.val() < 2014 || ccExpYear.val() > 2050) {
           return showError('The credit card expiration year is incorrect.', ccExpYear);
         }
 
@@ -100,7 +172,7 @@ ul.payment-methods li label img.active {
           var installments = parseInt(ccInstallments.val());
 
           if (installments.length == 0 || installments < 1 || installments > 6) {
-            return showError('The number of installments is incorrect.');
+            return showError('The number of installments is incorrect.', ccInstallments);
           }
         }
       }
@@ -108,6 +180,46 @@ ul.payment-methods li label img.active {
       return true;
     };
 
+    /**
+     * Updates the credit card issuer depending on its number
+     */
+    $("input[name='ebanx[cc_number]']").on('input keydown change', function() {
+      var ccNumber = $(this).val()
+        , ccType   = $("select[name='ebanx[cc_type]']")
+        , ccInstallments = $("select[name='ebanx[installments]']").closest('tr');
+
+      function toggleType(type) {
+        ccType.val(type);
+      }
+
+      ccInstallments.show();
+      if (ccNumber.match(/^4[0-9]{12}(?:[0-9]{3})?$/)) {
+        toggleType('visa');
+      } else if (ccNumber.match(/^5[1-5][0-9]{14}$/)) {
+        toggleType('mastercard');
+      } else if (ccNumber.match(/^3[47][0-9]{13}$/)) {
+        toggleType('amex');
+      } else if (ccNumber.match(/^3(?:0[0-5]|[68][0-9])[0-9]{11}$/)) {
+        toggleType('diners');
+      } else if (ccNumber.match(/^6(?:011|5[0-9]{2})[0-9]{12}$/)) {
+        toggleType('discover');
+        // No installments for Discover
+        ccInstallments.hide();
+      } else if (ccNumber.match(/^(636368|438935|504175|451416|636297|5067|4576|4011)/)) {
+        toggleType('elo');
+      } else if (ccNumber.match(/^50[0-9]{14,17}$/)) {
+        toggleType('aura');
+      } else {
+        toggleType('');
+      }
+    });
+
+    /**
+     * Binds the click event to the confirmation button. Applies validation to
+     * input fields.
+     * @param  {event} e
+     * @return {void}
+     */
     $('#button-confirm').bind('click', function(e) {
       if (validateEbanx() == false) {
         e.preventDefault();
@@ -115,24 +227,27 @@ ul.payment-methods li label img.active {
       }
 
       $.ajax({
-        url: 'index.php?route=payment/ebanx/checkoutDirect',
-        type: 'post',
-        data: $('#payment select'),
-        beforeSend: function() {
-          $('#button-confirm').attr('disabled', true);
-          $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /> <?php echo $text_wait; ?></div>');
-        },
-        complete: function() {
-          $('#button-confirm').attr('disabled', false);
-          $('.attention').remove();
-        },
-        success: function(response) {
-          if (response['error']) {
-            alert(response['error']);
-          } else {
-            window.location = response;
+          url: 'index.php?route=payment/ebanx/checkoutDirect'
+        , type: 'post'
+        , data: $('#payment select, #payment input[type=text], #payment input[type=radio]:checked')
+        , beforeSend: function() {
+            $('.payment > .warning').remove();
+            $('#button-confirm').fadeToggle();
+            $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /> <?php echo $text_wait; ?></div>');
           }
-        }
+        , complete: function() {
+            $('#button-confirm').fadeToggle();
+            $('.payment > .attention').remove();
+          }
+        , success: function(response) {
+            // If the response is a URL, redirect to it
+            if (response.match(/^http/)) {
+              window.location = response;
+            // Otherwise display an error message
+            } else {
+              $('#payment').before('<div class="warning">' + response + '</div>');
+            }
+          }
       });
     });
 
@@ -140,17 +255,24 @@ ul.payment-methods li label img.active {
         dateFormat: 'dd/mm/yy'
       , changeMonth: true
       , changeYear: true
-      , yearRange: 'c-100:c-16'
+      , yearRange: '<?php echo date('Y') - 100 ?>:<?php echo date('Y') - 16 ?>'
     });
 
+    /**
+     * Show/hide credit card fields
+     * @return {[type]} [description]
+     */
     $('#ebanx_method_boleto').click(function() {
       $('.ebanx-cc-info').hide();
     });
-
     $('#ebanx_method_cc').click(function() {
       $('.ebanx-cc-info').show();
     });
 
+    /**
+     * Toggles the payment method image active
+     * @return {void}
+     */
     $('ul.payment-methods li img').click(function() {
       var self = $(this);
 
@@ -158,6 +280,10 @@ ul.payment-methods li label img.active {
       self.addClass('active');
     })
 
+    /**
+     * Hides the installments field for Discover cards
+     * @return {void}
+     */
     $('#ebanx_cc_type').change(function() {
       var installments = $('#ebanx_installments_number').closest('tr');
 
@@ -180,12 +306,12 @@ ul.payment-methods li label img.active {
         <tbody>
           <tr>
             <td>CPF</td>
-            <td><input type="text" size="14" name="ebanx[cpf]" id="ebanx_cpf" /></td>
+            <td><input type="text" size="14" name="ebanx[cpf]" id="ebanx_cpf" value="<?php echo $ebanx_cpf ?>" /></td>
           </tr>
 
           <tr>
             <td>Date of Birth</td>
-            <td><input type="text" size="10" name="ebanx[dob]" id="ebanx_dob" /></td>
+            <td><input type="text" size="10" name="ebanx[dob]" id="ebanx_dob" value="<?php echo $ebanx_dob ?>" /></td>
           </tr>
 
           <tr>
@@ -291,7 +417,7 @@ ul.payment-methods li label img.active {
 
   <div class="buttons">
     <div class="right">
-      <input type="button" value="<?php echo $button_confirm; ?>" id="button-confirm" class="button" />
+      <img src="image/ebanx/ebanx-checkout.png" id="button-confirm" />
     </div>
   </div>
 </form>

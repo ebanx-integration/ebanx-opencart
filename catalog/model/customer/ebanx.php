@@ -53,10 +53,10 @@ class ModelCustomerEbanx extends Model
    * @param  array $data
    * @return void
    */
-  public function insert($data)
+  public function insert($id, $data)
   {
-    $sql  = "INSERT INTO " . DB_PREFIX . "customer_ebanx (customer_id, cpf, dob) VALUES (";
-    $sql .= $data['customer_id'] . ',' . $data['cpf'] . ',' . $data['dob'] . ')';
+    $sql  = "INSERT INTO " . DB_PREFIX . "customer_ebanx (customer_id, cpf, dob) VALUES ('";
+    $sql .= $id . "', '" . $data['cpf'] . "', '" . $data['dob'] . "')";
     $this->db->query($sql);
   }
 
@@ -64,7 +64,7 @@ class ModelCustomerEbanx extends Model
   {
     $sql  = "UPDATE " . DB_PREFIX . "customer_ebanx ";
     $sql .= "SET cpf = '" . $data['cpf'] . "', dob = '" . $data['dob'] . "' ";
-    $sql .= "WHERE customer_id = " . $id ";";
+    $sql .= "WHERE customer_id = " . $id . ";";
     $this->db->query($sql);
   }
 }
