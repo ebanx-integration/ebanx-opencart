@@ -159,8 +159,8 @@ class ControllerPaymentEbanx extends Controller
 		$params = array(
 				'name' 					=> $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
 			, 'email' 				=> $order_info['email']
-			, 'amount' 				=> $this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false)
-			, 'currency_code' => $order_info['currency_code']
+			, 'amount' 				=> $order_info['total']
+			, 'currency_code' => $this->config->get('config_currency')
 			, 'address'			  => $address
 			, 'zipcode' 		  => $order_info['payment_postcode']
 			, 'phone_number'  => $order_info['telephone']
@@ -177,7 +177,7 @@ class ControllerPaymentEbanx extends Controller
 			// Add interest to the order total
 			$interest    			= $this->config->get('ebanx_installments_interest');
 			$order_total 			= ($order_info['total'] * (100 + floatval($interest))) / 100.0;
-			$params['amount'] = $this->currency->format($order_total, $order_info['currency_code'], $order_info['currency_value'], false);
+			$params['amount'] = number_format($order_total, 2, '.', '');
 		}
 
 		$response = \Ebanx\Ebanx::doRequest($params);
