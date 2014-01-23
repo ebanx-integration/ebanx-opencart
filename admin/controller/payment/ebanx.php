@@ -165,6 +165,8 @@ class ControllerPaymentEbanx extends Controller
 			$this->config->set('ebanx_max_installments', 6);
 			$this->config->set('ebanx_direct', 0);
 			$this->config->set('ebanx_direct_cards', 0);
+			$this->config->set('ebanx_direct_boleto', 1);
+			$this->config->set('ebanx_direct_tef', 0);
 		}
 
 		if (isset($this->request->post['ebanx_merchant_key']))
@@ -295,16 +297,19 @@ class ControllerPaymentEbanx extends Controller
 
 		if (isset($this->request->post['ebanx_direct']))
 		{
-			$this->data['ebanx_direct_cards'] = $this->request->post['ebanx_direct_cards'];
+			$this->data['ebanx_direct_cards']  = $this->request->post['ebanx_direct_cards'];
+			$this->data['ebanx_direct_boleto'] = $this->request->post['ebanx_direct_boleto'];
+			$this->data['ebanx_direct_tef']    = $this->request->post['ebanx_direct_tef'];
 		}
 		else
 		{
-			$this->data['ebanx_direct_cards'] = (in_array($this->config->get('ebanx_direct_cards'), array(0, 1))) ? $this->config->get('ebanx_direct_cards') : 0;
+			$this->data['ebanx_direct_cards']  = (in_array($this->config->get('ebanx_direct_cards'), array(0, 1))) ? $this->config->get('ebanx_direct_cards') : 0;
+			$this->data['ebanx_direct_boleto'] = (in_array($this->config->get('ebanx_direct_boleto'), array(0, 1))) ? $this->config->get('ebanx_direct_boleto') : 0;
+			$this->data['ebanx_direct_tef']    = (in_array($this->config->get('ebanx_direct_tef'), array(0, 1))) ? $this->config->get('ebanx_direct_tef') : 0;
 		}
 
 		// Payment update URL
-		$this->data['ebanx_update_payments'] = $this->config->get('config_url')
-			. 'admin/index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];
+		$this->data['ebanx_update_payments'] = HTTPS_SERVER . 'index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];
 
 		$this->template = 'payment/ebanx.tpl';
 		$this->children = array(
@@ -334,51 +339,92 @@ class ControllerPaymentEbanx extends Controller
 		return !$this->error;
 	}
 
+	protected function _getPaymentData()
+  	{
+	  	return array(
+	      'mode'      => 'full',
+	      'operation' => 'request',
+	      'payment'   => array(
+		      'merchant_payment_code' => time(),
+	  	    'amount_total'      => 100,
+	        'currency_code'     => 'USD',
+	        'name'              => 'ROBERTO CARLOS',
+	        'email'             => 'roberto@example.com',
+	        'birth_date'        => '12/04/1979',
+	        'document'          => '88282672165',
+	        'address'           => 'AV MIRACATU',
+	        'street_number'     => '2993',
+	        'street_complement' => 'CJ 5',
+	        'city'              => 'CURITIBA',
+	        'state'             => 'PR',
+	        'zipcode'           => '81500000',
+	        'country'           => 'br',
+	        'phone_number'      => '4132332354',
+	        'payment_type_code' => 'boleto'
+	      )
+	    );
+	  }
 	/**
 	 * Update the payment methods accepted in direct mode
 	 * @return void
 	 */
 	public function updatePaymentMethods()
   {
-		$this->load->model('setting/setting');
+		$this->load->model('payment/ebanx');
   	$this->_setupEbanx();
-
-  	$paymentData = array(
-      'mode'      => 'full',
-      'operation' => 'request',
-      'payment'   => array(
-	      'merchant_payment_code' => time(),
-  	    'amount_total'      => 100,
-        'currency_code'     => 'USD',
-        'name'              => 'ROBERTO CARLOS',
-        'email'             => 'roberto@example.com',
-        'birth_date'        => '12/04/1979',
-        'document'          => '88282672165',
-        'address'           => 'AV MIRACATU',
-        'street_number'     => '2993',
-        'street_complement' => 'CJ 5',
-        'city'              => 'CURITIBA',
-        'state'             => 'PR',
-        'zipcode'           => '81500000',
-        'country'           => 'br',
-        'phone_number'      => '4132332354',
-        'payment_type_code' => 'boleto'
-      )
-    );
 
   	try
   	{
-    	$request = \Ebanx\Ebanx::doRequest($paymentData);
+  		// Force direct mode, will return error if not allowed for merchant.
+  		\Ebanx\Config::setDirectMode(true);
+
+  		// Reset all values
+  		$this->model_payment_ebanx->updateMethodBoleto(0);
+  		$this->model_payment_ebanx->updateMethodTef(0);
+  		$this->model_payment_ebanx->updateMethodCards(0);
+
+  		// Try boleto payments
+    	$request = \Ebanx\Ebanx::doRequest($this->_getPaymentData());
 
 	    if ($request->status == 'SUCCESS')
 	    {
-	    	echo 'Direct mode: boleto and credit cards are enabled.';
-	    	$this->model_setting_setting->editSettingValue('ebanx', 'ebanx_direct_cards', 1);
+	    	echo "Boleto is enabled.\n";
+	    	$this->model_payment_ebanx->updateMethodBoleto(1);
 	    }
-	    else
+
+	    // Try credit card payments
+	    $paymentCC = $this->_getPaymentData();
+	    $paymentCC['payment']['payment_type_code'] = 'visa';
+	    $paymentCC['payment']['creditcard'] = array(
+	    		'card_number'   => '1234'
+	    	, 'card_name'     => 'Foo'
+	    	, 'card_due_date' => '1234'
+	    	, 'card_cvv'		  => '123'
+	    );
+
+    	$request = \Ebanx\Ebanx::doRequest($paymentCC);
+
+    	if (preg_match('/^Field/', $request->status_message))
+    	{
+    		echo "Credit cards are enabled.\n";
+  			$this->model_payment_ebanx->updateMethodCards(1);
+    	}
+
+	    // Try TEF payments
+	    $paymentTef = $this->_getPaymentData();
+	    $paymentTef['payment']['payment_type_code'] = 'directdebit';
+	    $paymentTef['payment']['directdebit'] = array(
+	    		'bank_code'    => '1'
+	    	, 'bank_agency'  => '1'
+	    	, 'bank_account' => '1'
+	    );
+
+	    $request = \Ebanx\Ebanx::doRequest($paymentTef);
+
+	    if ($request->status == 'SUCCESS')
 	    {
-	    	echo 'Direct mode: only boleto is enabled.';
-	    	$this->model_setting_setting->editSettingValue('ebanx', 'ebanx_direct_cards', 0);
+	    	echo "Electronic Funds Transfer is enabled.\n";
+	    	$this->model_payment_ebanx->updateMethodTef(1);
 	    }
 	  }
 	  catch (Exception $e)

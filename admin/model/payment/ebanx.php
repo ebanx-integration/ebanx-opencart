@@ -70,4 +70,34 @@ class ModelPaymentEbanx extends Model
         $this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "order_ebanx`;");
         $this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "customer_ebanx`;");
 	}
+
+    public function updateMethodCards($value)
+    {
+        $this->_updatePaymentMethod('ebanx_direct_cards', $value);
+    }
+
+    public function updateMethodTef($value)
+    {
+        $this->_updatePaymentMethod('ebanx_direct_tef', $value);
+    }
+
+    public function updateMethodBoleto($value)
+    {
+        $this->_updatePaymentMethod('ebanx_direct_boleto', $value);
+    }
+
+    protected function _updatePaymentMethod($key, $value)
+    {
+        $sql = "DELETE FROM `" . DB_PREFIX . "setting` WHERE `key` = '$key'";
+        $this->db->query($sql);
+
+        $sql = "INSERT INTO `" . DB_PREFIX . "setting` (
+                  `group`, `key`, `value`
+                ) VALUES (
+                  'ebanx', '$key', $value
+                )";
+
+        $this->db->query($sql);
+
+    }
 }

@@ -176,7 +176,7 @@
             <td><?php echo $entry_update_methods ?></td>
             <td>
               <input type="hidden" name="ebanx_direct_cards" value="<?php echo intval($ebanx_direct_cards) ?>" />
-              <p>Current methods: <strong><?php echo ($ebanx_direct_cards == 1) ? 'boleto, credit card' : 'boleto' ?></strong>
+              <p>Current methods: <strong><?php echo implode(', ', array(($ebanx_direct_cards == 1) ? 'credit card' : '', ($ebanx_direct_boleto == 1) ? 'boleto' : '', ($ebanx_direct_tef == 1) ? 'electronic funds transfer' : '')) ?></strong></p>
               <p><a class="button" id="update-payment-methods">Update</a></p>
             </td>
           </tr>
