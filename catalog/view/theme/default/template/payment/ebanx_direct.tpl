@@ -51,7 +51,7 @@ ul.payment-methods li label img.active {
 
       var installments = $('#ebanx_installments_number');
 
-      if (installments && installments.val() > 1) {
+      if ($('#ebanx_method_cc').is(':checked') && installments && installments.val() > 1) {
         if (!$('#ebanx-discount').length) {
           var interestHtml = '<tr id="ebanx-discount"><td colspan="4" class="price"><b>Interest:</b></td><td class="total">' + interest + '</td></tr>';
           $(interestHtml).insertBefore($('.checkout-product tfoot tr:last-child'));
@@ -293,9 +293,11 @@ ul.payment-methods li label img.active {
      */
     $('#ebanx_method_boleto').click(function() {
       $('.ebanx-cc-info').hide();
+      updateTotals();
     });
     $('#ebanx_method_cc').click(function() {
       $('.ebanx-cc-info').show();
+      updateTotals();
     });
 
     /**
