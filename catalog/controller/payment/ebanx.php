@@ -147,6 +147,7 @@ class ControllerPaymentEbanx extends Controller
 	{
 		$this->_setupEbanx();
 		$this->load->model('checkout/order');
+		$this->load->model('payment/ebanx');
 
 		$order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
@@ -178,6 +179,15 @@ class ControllerPaymentEbanx extends Controller
 			$interest    			= $this->config->get('ebanx_installments_interest');
 			$order_total 			= ($order_info['total'] * (100 + floatval($interest))) / 100.0;
 			$params['amount'] = number_format($order_total, 2, '.', '');
+
+			// Save installments to total
+			$this->model_payment_ebanx->updateTotalsWithInterest(array(
+				  'order_id'       => $order_info['order_id']
+				, 'total_text'     => $this->currency->format($params['amount'])
+				, 'total_value'    => $params['amount']
+				, 'interest_text'  => $this->currency->format($order_total - $order_info['total'])
+				, 'interest_value' => $order_total - $order_info['total']
+			));
 		}
 
 		$response = \Ebanx\Ebanx::doRequest($params);
@@ -205,6 +215,7 @@ class ControllerPaymentEbanx extends Controller
 		$this->_setupEbanx();
 		$this->load->model('checkout/order');
 		$this->load->model('customer/ebanx');
+		$this->load->model('payment/ebanx');
 
 		$order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
@@ -249,6 +260,15 @@ class ControllerPaymentEbanx extends Controller
 			$interest    = $this->config->get('ebanx_installments_interest');
 			$order_total = ($order_info['total'] * (100 + floatval($interest))) / 100.0;
 			$params['payment']['amount_total'] = number_format($order_total, 2, '.', '');
+
+			// Save installments to total
+			$this->model_payment_ebanx->updateTotalsWithInterest(array(
+				  'order_id'       => $order_info['order_id']
+				, 'total_text'     => $this->currency->format($params['payment']['amount_total'])
+				, 'total_value'    => $params['payment']['amount_total']
+				, 'interest_text'  => $this->currency->format($order_total - $order_info['total'])
+				, 'interest_value' => $order_total - $order_info['total']
+			));
 		}
 
     // Add credit card fields if the method is credit card

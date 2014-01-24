@@ -37,6 +37,35 @@ ul.payment-methods li label img.active {
 
 <script>
     /**
+     * Hack to show installments interest in the totals
+     * @return {void}
+     */
+    var updateTotals = function() {
+      var total    = '<?php echo $this->currency->format($order_total) ?>'
+        , interest = '<?php echo $this->currency->format($order_total_interest - $order_total) ?>'
+        , totalWithInterest = '<?php echo $this->currency->format($order_total_interest) ?>';
+
+      if (interest.replace(/\D/, '') == '0') {
+        return;
+      }
+
+      var installments = $('#ebanx_installments_number');
+
+      if (installments && installments.val() > 1) {
+        if (!$('#ebanx-discount').length) {
+          var interestHtml = '<tr id="ebanx-discount"><td colspan="4" class="price"><b>Interest:</b></td><td class="total">' + interest + '</td></tr>';
+          $(interestHtml).insertBefore($('.checkout-product tfoot tr:last-child'));
+          $('.checkout-product tfoot tr:last-child').children('td:last-child').html(totalWithInterest);
+        }
+      } else {
+        $('#ebanx-discount').remove();
+        $('.checkout-product tfoot tr:last-child').children('td:last-child').html(total);
+      }
+    };
+
+    $('#ebanx_installments_number').change(updateTotals);
+
+    /**
      * Shows an error message and focuses on the element with errors
      * @param  {string} message The error message
      * @param  {selector} elm   The selector of the element

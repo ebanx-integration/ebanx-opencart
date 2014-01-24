@@ -74,4 +74,25 @@ class ModelPaymentEbanx extends Model
   {
 		$this->db->query("INSERT INTO " . DB_PREFIX . "order_ebanx VALUES($orderId, '$paymentHash')");
 	}
+
+  public function updateTotalsWithInterest($data)
+  {
+    $sql = "UPDATE " . DB_PREFIX . "order_total SET `text` = '" . $data['total_text'] . "', `value` = '" . $data['total_value'] . "'
+            WHERE `order_id` = '" . $data['order_id'] . "' AND `code` = 'total'";
+    $this->db->query($sql);
+
+    // Insert interest rate if it was not inserted yet
+    $sql = "SELECT order_total_id FROM " . DB_PREFIX . "order_total WHERE `order_id` = '" . $data['order_id'] . "' AND code = 'ebanx_interest'";
+    $result = $this->db->query($sql);
+
+    if ($result->num_rows == 0)
+    {
+      $sql = "INSERT INTO " . DB_PREFIX . "order_total (`order_id`, `code`, `title`, `text`, `value`, `sort_order`)
+              VALUES ('" . $data['order_id'] . "', 'ebanx_interest', 'Interest', '" . $data['interest_text'] . "', '" . $data['interest_value'] . "', '8')";
+      $this->db->query($sql);
+    }
+
+    $sql = "UPDATE " . DB_PREFIX . "order SET `total` = '" . $data['total_value']. "' WHERE `order_id` = " . $data['order_id'];
+    $this->db->query($sql);
+  }
 }
