@@ -73,20 +73,28 @@ class ModelPaymentEbanx extends Model
 
     public function updateMethodCards($value)
     {
-        $this->_updatePaymentMethod('ebanx_direct_cards', $value);
+        $this->_updateSetting('ebanx_direct_cards', $value);
     }
 
     public function updateMethodTef($value)
     {
-        $this->_updatePaymentMethod('ebanx_direct_tef', $value);
+        $this->_updateSetting('ebanx_direct_tef', $value);
     }
 
     public function updateMethodBoleto($value)
     {
-        $this->_updatePaymentMethod('ebanx_direct_boleto', $value);
+        $this->_updateSetting('ebanx_direct_boleto', $value);
     }
 
-    protected function _updatePaymentMethod($key, $value)
+    public function updateSettings($arr)
+    {
+        foreach ($arr as $key => $value)
+        {
+            $this->_updateSetting($key, $value);
+        }
+    }
+
+    protected function _updateSetting($key, $value)
     {
         $sql = "DELETE FROM `" . DB_PREFIX . "setting` WHERE `key` = '$key'";
         $this->db->query($sql);
@@ -94,7 +102,7 @@ class ModelPaymentEbanx extends Model
         $sql = "INSERT INTO `" . DB_PREFIX . "setting` (
                   `group`, `key`, `value`
                 ) VALUES (
-                  'ebanx', '$key', $value
+                  'ebanx', '$key', '$value'
                 )";
 
         $this->db->query($sql);

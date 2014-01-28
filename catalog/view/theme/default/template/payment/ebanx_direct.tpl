@@ -53,7 +53,7 @@ ul.payment-methods li label img.active {
 
       if ($('#ebanx_method_cc').is(':checked') && installments && installments.val() > 1) {
         if (!$('#ebanx-discount').length) {
-          var interestHtml = '<tr id="ebanx-discount"><td colspan="4" class="price"><b>Interest:</b></td><td class="total">' + interest + '</td></tr>';
+          var interestHtml = '<tr id="ebanx-discount"><td colspan="4" class="price"><b><?php echo $entry_interest ?>:</b></td><td class="total">' + interest + '</td></tr>';
           $(interestHtml).insertBefore($('.checkout-product tfoot tr:last-child'));
           $('.checkout-product tfoot tr:last-child').children('td:last-child').html(totalWithInterest);
         }
@@ -95,6 +95,11 @@ ul.payment-methods li label img.active {
      * @return {boolean}
      */
     var validCpf = function(cpf) {
+      // Allows only numbers, dots and dashes
+      if (cpf.match(/[a-z]/gi)) {
+        return false;
+      }
+
       var digits = cpf.replace(/[\D]/g, '')
         , dv1, dv2, sum, mod;
 
@@ -121,6 +126,11 @@ ul.payment-methods li label img.active {
      * @return {boolean}
      */
     var validCreditCard = function(value) {
+      // Non numeric characters are not allowed
+      if (value.match(/\D/)) {
+        return false;
+      }
+
       value = value.replace(/\D/g, '');
 
       var nCheck = 0
@@ -331,7 +341,7 @@ ul.payment-methods li label img.active {
 
 <form method="post" id="payment">
   <?php if ($enable_installments): ?>
-    <h2>Ebanx Details</h2>
+    <h2><?php echo $entry_ebanx_details ?></h2>
     <div class="content" id="payment">
       <table class="form">
         <tbody>
@@ -341,12 +351,12 @@ ul.payment-methods li label img.active {
           </tr>
 
           <tr>
-            <td>Date of Birth</td>
+            <td><?php echo $entry_dob ?></td>
             <td><input type="text" size="10" name="ebanx[dob]" id="ebanx_dob" value="<?php echo $ebanx_dob ?>" /></td>
           </tr>
 
           <tr>
-            <td>Payment Method</td>
+            <td><?php echo $entry_payment_method ?></td>
             <td>
               <ul class="payment-methods">
                 <?php if ($ebanx_direct_cards == 1): ?>
@@ -356,23 +366,25 @@ ul.payment-methods li label img.active {
                 </li>
                 <? endif ?>
 
+                <?php if ($ebanx_direct_boleto == 1): ?>
                 <li>
                   <input type="radio" name="ebanx[method]" value="boleto" id="ebanx_method_boleto" checked="checked" />
                   <label for="ebanx_method_boleto"><img src="image/ebanx/ebanx-boleto.png" width="264" height="63"  class="active"></label>
                 </li>
+                <? endif ?>
               </ul>
             </td>
           </tr>
 
           <tr class="ebanx-cc-info">
-            <td>Name on Card</td>
+            <td><?php echo $entry_card_name ?></td>
             <td>
               <input type="text" name="ebanx[cc_name]" value="" size="20" />
             </td>
           </tr>
 
           <tr class="ebanx-cc-info">
-            <td>Credit Card Number</td>
+            <td><?php echo $entry_card_number ?></td>
             <td>
               <input type="text" name="ebanx[cc_number]" value="" size="20" />
             </td>
@@ -386,10 +398,10 @@ ul.payment-methods li label img.active {
           </tr>
 
           <tr class="ebanx-cc-info">
-            <td>Credit Card Type</td>
+            <td><?php echo $entry_card_type ?></td>
             <td>
               <select id="ebanx_cc_type" name="ebanx[cc_type]" autocomplete="off">
-                <option value="" selected="selected">Please select</option>
+                <option value="" selected="selected"><?php echo $entry_please_select ?></option>
                 <option value="aura">Aura</option>
                 <option value="amex">American Express</option>
                 <option value="diners">Diners</option>
@@ -402,10 +414,10 @@ ul.payment-methods li label img.active {
           </tr>
 
           <tr class="ebanx-cc-info">
-            <td>Expiration Date</td>
+            <td><?php $entry_card_exp ?></td>
             <td>
               <select id="ebanx_cc_exp_month" name="ebanx[cc_exp][month]" autocomplete="off">
-                <option value="" selected="selected">Month</option>
+                <option value="" selected="selected"><?php echo $entry_month ?></option>
                 <option value="1">01 - January</option>
                 <option value="2">02 - February</option>
                 <option value="3">03 - March</option>
@@ -421,7 +433,7 @@ ul.payment-methods li label img.active {
               </select>
 
               <select id="ebanx_cc_exp_year" name="ebanx[cc_exp][year]" autocomplete="off">
-                <option value="" selected="selected">Year</option>
+                <option value="" selected="selected"><?php echo $entry_year ?></option>
                 <?php for ($i = date('Y'); $i < date('Y') + 15; $i++): ?>
                   <option value="<?php echo $i ?>"><?php echo $i ?></option>
                 <?php endfor ?>

@@ -96,15 +96,28 @@ class ControllerPaymentEbanx extends Controller
 
 		// Form translations
 		$this->language->load('payment/ebanx');
+		$this->data['text_wait'] 							   = $this->language->get('text_wait');
 		$this->data['entry_installments_number'] = $this->language->get('entry_installments_number');
 		$this->data['entry_installments_cc']     = $this->language->get('entry_installments_cc');
-		$this->data['text_wait'] = $this->language->get('text_wait');
+		$this->data['entry_payment_method']      = $this->language->get('entry_payment_method');
+		$this->data['entry_dob']                 = $this->language->get('entry_dob');
+		$this->data['entry_card_name']           = $this->language->get('entry_card_name');
+		$this->data['entry_card_number']         = $this->language->get('entry_card_number');
+		$this->data['entry_card_type']           = $this->language->get('entry_card_type');
+		$this->data['entry_card_exp']            = $this->language->get('entry_card_exp');
+		$this->data['entry_ebanx_details']       = $this->language->get('entry_ebanx_details');
+		$this->data['entry_interest']						 = $this->language->get('entry_interest');
+		$this->data['entry_please_select']   		 = $this->language->get('entry_please_select');
+		$this->data['entry_month'] 						 	 = $this->language->get('entry_month');
+		$this->data['entry_year']  							 = $this->language->get('entry_year');
 
 		// Currency symbol and order total for display purposes
 		$this->data['order_total']   = $order_info['total'];
 		$this->data['currency_code'] = $order_info['currency_code'];
 
-		$this->data['ebanx_direct_cards'] = $this->config->get('ebanx_direct_cards');
+		$this->data['ebanx_direct_cards']  = $this->config->get('ebanx_direct_cards');
+		$this->data['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto');
+		$this->data['ebanx_direct_tef']    = $this->config->get('ebanx_direct_tef');
 
 		// Render normal or direct checkout page
 		$template = 'ebanx';

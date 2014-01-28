@@ -37,24 +37,24 @@
 $_['heading_title'] = 'EBANX';
 $_['text_title']    = 'EBANX (Boleto Bancário, HSBC, Itaú, Bradesco, Banco do Brasil, Visa, Mastercard)';
 
-$_['text_response']     = 'Thanks for using EBANX.';
-$_['text_success']      = 'Your payment was successful.';
-$_['text_success_wait'] = 'In 5 seconds you will be redirected to the shopping cart.';
-$_['text_failure']      = 'Your payment has failed. Please try again chosing a different method.';
-$_['text_failure_wait'] = 'In 5 seconds you will be redirected to the shopping cart.';
-$_['text_wait']         = 'Please wait...';
+$_['text_response']     = 'Obrigado por pagar com EBANX.';
+$_['text_success']      = 'O pagamento foi efetuado com sucesso.';
+$_['text_success_wait'] = 'Você será redirecionado em 5 segundos.';
+$_['text_failure']      = 'O pagamento falhou. Por favor tente novamente.';
+$_['text_failure_wait'] = 'Você será redirecionado em 5 segundos.';
+$_['text_wait']         = 'Por favor aguarde...';
 
-$_['entry_installments_number'] = 'Installments';
-$_['entry_installments_cc'] = 'Credit Card';
-$_['entry_payment_method']  = 'Payment Method';
-$_['entry_dob']             = 'Date of Birth';
-$_['entry_card_name']       = 'Name on Card';
-$_['entry_card_number']     = 'Credit Card Number';
-$_['entry_card_type']       = 'Credit Card Type';
-$_['entry_card_exp']        = 'Expiration Date';
-$_['entry_ebanx_details']   = 'Ebanx Details';
-$_['entry_interest']        = 'Interest';
+$_['entry_installments_number'] = 'Parcelas';
+$_['entry_installments_cc'] = 'Cartão de Crédito';
+$_['entry_payment_method']  = 'Método de Pagamento';
+$_['entry_dob']             = 'Data de Nascimento';
+$_['entry_card_name']       = 'Nome no Cartão';
+$_['entry_card_number']     = 'Número do Cartão';
+$_['entry_card_type']       = 'Emissor';
+$_['entry_card_exp']        = 'Validade';
+$_['entry_ebanx_details']   = 'Pagamento via EBANX';
+$_['entry_interest']        = 'Juros';
 
-$_['entry_please_select']   = 'Please select';
-$_['entry_month'] = 'Month';
-$_['entry_year']  = 'Year';
+$_['entry_please_select']   = 'Por favor selecione';
+$_['entry_month'] = 'Mês';
+$_['entry_year']  = 'Ano';

@@ -65,11 +65,12 @@ class ControllerPaymentEbanx extends Controller
 		$this->language->load('payment/ebanx');
 		$this->document->setTitle($this->language->get('heading_title'));
 		$this->load->model('setting/setting');
+		$this->load->model('payment/ebanx');
 
 		// Saves the new settings
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate())
 		{
-			$this->model_setting_setting->editSetting('ebanx', $this->request->post);
+			$this->model_payment_ebanx->updateSettings($this->request->post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
@@ -295,18 +296,9 @@ class ControllerPaymentEbanx extends Controller
 			$this->data['ebanx_direct'] = $this->config->get('ebanx_direct');
 		}
 
-		if (isset($this->request->post['ebanx_direct']))
-		{
-			$this->data['ebanx_direct_cards']  = $this->request->post['ebanx_direct_cards'];
-			$this->data['ebanx_direct_boleto'] = $this->request->post['ebanx_direct_boleto'];
-			$this->data['ebanx_direct_tef']    = $this->request->post['ebanx_direct_tef'];
-		}
-		else
-		{
-			$this->data['ebanx_direct_cards']  = (in_array($this->config->get('ebanx_direct_cards'), array(0, 1))) ? $this->config->get('ebanx_direct_cards') : 0;
-			$this->data['ebanx_direct_boleto'] = (in_array($this->config->get('ebanx_direct_boleto'), array(0, 1))) ? $this->config->get('ebanx_direct_boleto') : 0;
-			$this->data['ebanx_direct_tef']    = (in_array($this->config->get('ebanx_direct_tef'), array(0, 1))) ? $this->config->get('ebanx_direct_tef') : 0;
-		}
+		$this->data['ebanx_direct_cards']  = $this->config->get('ebanx_direct_cards')  ? $this->config->get('ebanx_direct_cards')  : 0;
+		$this->data['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto') ? $this->config->get('ebanx_direct_boleto') : 0;
+		$this->data['ebanx_direct_tef']    = $this->config->get('ebanx_direct_tef')    ? $this->config->get('ebanx_direct_tef')    : 0;
 
 		// Payment update URL
 		$this->data['ebanx_update_payments'] = HTTPS_SERVER . 'index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];

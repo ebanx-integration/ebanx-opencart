@@ -176,7 +176,12 @@
             <td><?php echo $entry_update_methods ?></td>
             <td>
               <input type="hidden" name="ebanx_direct_cards" value="<?php echo intval($ebanx_direct_cards) ?>" />
-              <p>Current methods: <strong><?php echo implode(', ', array(($ebanx_direct_cards == 1) ? 'credit card' : '', ($ebanx_direct_boleto == 1) ? 'boleto' : '', ($ebanx_direct_tef == 1) ? 'electronic funds transfer' : '')) ?></strong></p>
+              <p>Payment methods availability:</p>
+              <ul>
+                <li>Boleto: <?php echo ($ebanx_direct_boleto == 1) ? 'enabled' : 'disabled' ?></li>
+                <li>Credit cards: <?php echo ($ebanx_direct_cards == 1) ? 'enabled' : 'disabled' ?></li>
+                <li>TEF: <?php echo ($ebanx_direct_tef == 1) ? 'enabled' : 'disabled' ?></li>
+              </ul>
               <p><a class="button" id="update-payment-methods">Update</a></p>
             </td>
           </tr>
@@ -203,6 +208,21 @@ $(document).ready(function() {
       alert(r);
       window.location.reload();
     });
+  });
+
+  /**
+   * Remove non numeric characters from interest rate
+   */
+  $('input[name=ebanx_installments_interest]').on('change keyup keydown', function(e) {
+    var self  = $(this)
+      , input =  $(this).val()
+      , newInput = input.replace(/[^\d.]/g, '');
+
+    if (input.length == newInput.length) {
+      return;
+    }
+
+    self.val(newInput);
   });
 });
 </script>
