@@ -331,31 +331,6 @@ class ControllerPaymentEbanx extends Controller
 		return !$this->error;
 	}
 
-	protected function _getPaymentData()
-  	{
-	  	return array(
-	      'mode'      => 'full',
-	      'operation' => 'request',
-	      'payment'   => array(
-		      'merchant_payment_code' => time(),
-	  	    'amount_total'      => 100,
-	        'currency_code'     => 'USD',
-	        'name'              => 'ROBERTO CARLOS',
-	        'email'             => 'roberto@example.com',
-	        'birth_date'        => '12/04/1979',
-	        'document'          => '88282672165',
-	        'address'           => 'AV MIRACATU',
-	        'street_number'     => '2993',
-	        'street_complement' => 'CJ 5',
-	        'city'              => 'CURITIBA',
-	        'state'             => 'PR',
-	        'zipcode'           => '81500000',
-	        'country'           => 'br',
-	        'phone_number'      => '4132332354',
-	        'payment_type_code' => 'boleto'
-	      )
-	    );
-	  }
 	/**
 	 * Update the payment methods accepted in direct mode
 	 * @return void
@@ -363,65 +338,61 @@ class ControllerPaymentEbanx extends Controller
 	public function updatePaymentMethods()
   {
 		$this->load->model('payment/ebanx');
-  	$this->_setupEbanx();
 
-  	try
-  	{
-  		// Force direct mode, will return error if not allowed for merchant.
-  		\Ebanx\Config::setDirectMode(true);
+		// Use the fake API
+		$ch = curl_init();
 
-  		// Reset all values
+		$key  = $this->config->get('ebanx_merchant_key');
+		$url = 'http://integration.ebanx.com/api/getPaymentMethods.php?key=' . $key;
+
+		// Check if test mode is enabled
+		if ($this->config->get('ebanx_mode') == 'test')
+		{
+			$url .= '&test';
+		}
+
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $response = json_decode($response);
+
+    if ($response->status == 'SUCCESS')
+    {
+		  //Reset all values
   		$this->model_payment_ebanx->updateMethodBoleto(0);
   		$this->model_payment_ebanx->updateMethodTef(0);
   		$this->model_payment_ebanx->updateMethodCards(0);
 
-  		// Try boleto payments
-    	$request = \Ebanx\Ebanx::doRequest($this->_getPaymentData());
-
-	    if ($request->status == 'SUCCESS')
-	    {
-	    	echo "Boleto is enabled.\n";
-	    	$this->model_payment_ebanx->updateMethodBoleto(1);
-	    }
-
-	    // Try credit card payments
-	    $paymentCC = $this->_getPaymentData();
-	    $paymentCC['payment']['payment_type_code'] = 'visa';
-	    $paymentCC['payment']['creditcard'] = array(
-	    		'card_number'   => '1234'
-	    	, 'card_name'     => 'Foo'
-	    	, 'card_due_date' => '1234'
-	    	, 'card_cvv'		  => '123'
-	    );
-
-    	$request = \Ebanx\Ebanx::doRequest($paymentCC);
-
-    	if (preg_match('/^Field/', $request->status_message))
+    	if (in_array('boleto', $response->methods))
     	{
-    		echo "Credit cards are enabled.\n";
-  			$this->model_payment_ebanx->updateMethodCards(1);
+    		echo "Boleto is enabled.\n";
+	      $this->model_payment_ebanx->updateMethodBoleto(1);
     	}
 
-	    // Try TEF payments
-	    $paymentTef = $this->_getPaymentData();
-	    $paymentTef['payment']['payment_type_code'] = 'directdebit';
-	    $paymentTef['payment']['directdebit'] = array(
-	    		'bank_code'    => '1'
-	    	, 'bank_agency'  => '1'
-	    	, 'bank_account' => '1'
-	    );
+    	if (in_array('credit_cards', $response->methods))
+    	{
+    		echo "Credit cards are enabled.\n";
+	      $this->model_payment_ebanx->updateMethodCards(1);
+    	}
 
-	    $request = \Ebanx\Ebanx::doRequest($paymentTef);
-
-	    if ($request->status == 'SUCCESS')
-	    {
-	    	echo "Electronic Funds Transfer is enabled.\n";
-	    	$this->model_payment_ebanx->updateMethodTef(1);
-	    }
-	  }
-	  catch (Exception $e)
-	  {
-	  	echo 'Direct mode is disabled for your merchant account.';
+    	if (in_array('tef', $response->methods))
+    	{
+    		echo "Electronic Funds Transfer is enabled.\n";
+	      $this->model_payment_ebanx->updateMethodTef(1);
+    	}
+    }
+    else
+    {
+    	if (isset($response->status) && $response->status == 'ERROR')
+    	{
+	  		echo $response->message;
+	  	}
+	  	else
+	  	{
+	  		echo 'Direct mode is disabled for your merchant account.';
+	  	}
 	  }
 
     exit;
