@@ -534,5 +534,7 @@ class ControllerPaymentEbanx extends Controller
 				$this->model_checkout_order->update($order_id, $status);
 			}
 		}
+
+		echo 'OK';
 	}
 }
