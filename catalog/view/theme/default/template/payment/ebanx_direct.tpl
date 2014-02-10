@@ -414,7 +414,7 @@ ul.payment-methods li label img.active {
           </tr>
 
           <tr class="ebanx-cc-info">
-            <td><?php $entry_card_exp ?></td>
+            <td><?php echo $entry_card_exp ?></td>
             <td>
               <select id="ebanx_cc_exp_month" name="ebanx[cc_exp][month]" autocomplete="off">
                 <option value="" selected="selected"><?php echo $entry_month ?></option>

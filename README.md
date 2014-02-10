@@ -46,6 +46,7 @@ git clone --recursive https://github.com/ebanx/ebanx-opencart.git
 11. That's all!
 
 ## Changelog
+1.1.1: removed installments from checkout mode, fixed translated field issue
 1.1.0: implemented direct checkout (boleto and credit cards)
 1.0.1: included EUR conversion in minimum installment value
 1.0.0: first release

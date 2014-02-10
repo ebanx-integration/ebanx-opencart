@@ -62,7 +62,8 @@ class ControllerPaymentEbanx extends Controller
 
 		$this->data['button_confirm'] = $this->language->get('button_confirm');
 
-		$this->data['enable_installments'] = $this->config->get('ebanx_enable_installments');
+		// Disable installments on checkout mode
+		$this->data['enable_installments'] = false;
 
 		// Order total with interest
 		$interest    = $this->config->get('ebanx_installments_interest');
@@ -123,6 +124,9 @@ class ControllerPaymentEbanx extends Controller
 		$template = 'ebanx';
 		if ($this->config->get('ebanx_direct') == 1)
 		{
+			// Check if installments are enabled for direct mode
+			$this->data['enable_installments'] = $this->config->get('ebanx_enable_installments');
+
 			$template .= '_direct';
 
 			// Preload customer data (CPF and DOB)
