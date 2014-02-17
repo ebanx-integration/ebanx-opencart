@@ -32,6 +32,7 @@
 
 
 require_once DIR_SYSTEM . 'library/ebanx-php/src/autoload.php';
+require_once DIR_SYSTEM . 'library/slog/src/autoload.php';
 
 /**
  * The payment actions controller
@@ -49,6 +50,21 @@ class ControllerPaymentEbanx extends Controller
 		  , 'testMode'       => ($this->config->get('ebanx_mode') == 'test')
 		  , 'directMode'		 => ($this->config->get('ebanx_direct') == 1)
 		));
+	}
+
+	/**
+	 * Save EBANX stuff to log
+	 * @param  string $text Text to log
+	 * @return void
+	 */
+	protected function _log($text)
+	{
+		$writer = new \Slog\Writer\File(array(
+				'filename' => 'ebanx'
+			, 'path'		 => DIR_SYSTEM . 'logs'
+		));
+		$logger = new \Slog\Slog($writer);
+		$logger->write($text);
 	}
 
 	/**
@@ -211,6 +227,8 @@ class ControllerPaymentEbanx extends Controller
 
 		if ($response->status == 'SUCCESS')
 		{
+			$this->_log('SUCCESS | Order: ' . $order_info['order_id'] . ', Hash: ' . $response->payment->hash);
+
 			$this->load->model('payment/ebanx');
 			$this->model_payment_ebanx->setPaymentHash($order_info['order_id'], $response->payment->hash);
 
@@ -220,6 +238,10 @@ class ControllerPaymentEbanx extends Controller
 
 			echo $response->redirect_url;
 			die();
+		}
+		else
+		{
+			$this->_log('ERROR | Order: ' . $order_info['order_id'] . ', Error: ' . $response->status_message);
 		}
 	}
 
@@ -322,6 +344,8 @@ class ControllerPaymentEbanx extends Controller
 
 		if ($response->status == 'SUCCESS')
 		{
+			$this->_log('SUCCESS | Order: ' . $order_info['order_id'] . ', Hash: ' . $response->payment->hash);
+
 			$this->load->model('payment/ebanx');
 			$this->model_payment_ebanx->setPaymentHash($order_info['order_id'], $response->payment->hash);
 
@@ -345,6 +369,7 @@ class ControllerPaymentEbanx extends Controller
 			// Display the EBANX error message or the default one
 			if (isset($response->status_message))
 			{
+				$this->_log('ERROR | Order: ' . $order_info['order_id'] . ', Error: ' . $response->status_message);
 				echo $response->status_message;
 			}
 			else
@@ -484,6 +509,8 @@ class ControllerPaymentEbanx extends Controller
 		// Update the order status, then redirect to the success page
 		if (isset($response->status) && $response->status == 'SUCCESS' && ($response->payment->status == 'PE' || $response->payment->status == 'CO'))
 		{
+			$this->_log('CALLBACK SUCCESS | Order: ' . $this->session->data['order_id'] . ', Status: ' . $response->payment->status);
+
 			$this->load->model('checkout/order');
 
 			if ($response->payment->status == 'CO')
@@ -522,7 +549,14 @@ class ControllerPaymentEbanx extends Controller
 	{
 		$this->_setupEbanx();
 
-		$hashes = explode(',', $this->request->post['hash_codes']);
+		$hashes = $this->request->post['hash_codes'];
+
+		if ($hashes == null)
+		{
+			return;
+		}
+
+		$hashes = explode(',', $hashes);
 
 		foreach ($hashes as $hash)
 		{
@@ -536,6 +570,8 @@ class ControllerPaymentEbanx extends Controller
 				$order_id = str_replace('_', '', $response->payment->merchant_payment_code);
 				$status = $this->config->get('ebanx_order_status_' . strtolower($response->payment->status) . '_id');
 				$this->model_checkout_order->update($order_id, $status);
+
+				$this->_log('NOTIFY SUCCESS | Order: ' . $order_id . ', Status: ' . $response->payment->status);
 			}
 		}
 
