@@ -398,6 +398,40 @@ class ControllerPaymentEbanx extends Controller
     exit;
   }
 
+  /**
+   * Shows the EBANX log file
+   * @return void
+   */
+  public function viewLog()
+  {
+  	$logFile = DIR_SYSTEM . 'logs/ebanx.log';
+
+  	if (file_exists($logFile))
+  	{
+  		$log = file_get_contents($logFile);
+  		echo '<pre>' . $log . '</pre>';
+  	}
+  	else
+  	{
+  		echo 'The log is empty.';
+  	}
+  }
+
+  /**
+   * Removes the EBANX log file
+   * @return void
+   */
+  public function clearLog()
+  {
+  	$logFile = DIR_SYSTEM . 'logs/ebanx.log';
+
+  	if (file_exists($logFile))
+  	{
+  		unlink($logFile);
+  	}
+
+  	echo 'The log was cleared.';
+  }
 
 	/**
 	 * Installs the EBANX extension

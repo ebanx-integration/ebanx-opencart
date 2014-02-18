@@ -187,6 +187,14 @@
           </tr>
 
           <tr>
+            <td>Logs</td>
+            <td>
+              <a class="button" href="<?php echo $this->url->link('payment/ebanx/viewLog') ?>&token=<?php echo $_SESSION['token'] ?>" target="_blank">View log</a>
+              <a class="button" href="<?php echo $this->url->link('payment/ebanx/clearLog') ?>&token=<?php echo $_SESSION['token'] ?>" target="_blank">Clear log</a>
+            </td>
+          </tr>
+
+          <tr>
             <td><?php echo $entry_sort_order ?></td>
             <td><input type="text" name="ebanx_sort_order" value="<?php echo $ebanx_sort_order ?>" size="1" /></td>
           </tr>
