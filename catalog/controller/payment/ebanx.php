@@ -504,25 +504,30 @@ class ControllerPaymentEbanx extends Controller
 		$this->data['text_success_wait'] = sprintf($this->language->get('text_success_wait'), $this->url->link('checkout/success'));
 		$this->data['text_failure_wait'] = sprintf($this->language->get('text_failure_wait'), $this->url->link('checkout/checkout', '', 'SSL'));
 
-		$response = \Ebanx\Ebanx::doQuery(array('hash' => $this->request->get['hash']));
+		$hash = isset($this->request->get['hash']) ? $this->request->get['hash'] : false;
 
-		// Update the order status, then redirect to the success page
-		if (isset($response->status) && $response->status == 'SUCCESS' && ($response->payment->status == 'PE' || $response->payment->status == 'CO'))
+		if ($hash && strlen($hash))
 		{
-			$this->_log('CALLBACK SUCCESS | Order: ' . $this->session->data['order_id'] . ', Status: ' . $response->payment->status);
+			$response = \Ebanx\Ebanx::doQuery(array('hash' => $hash));
 
-			$this->load->model('checkout/order');
-
-			if ($response->payment->status == 'CO')
+			// Update the order status, then redirect to the success page
+			if (isset($response->status) && $response->status == 'SUCCESS' && ($response->payment->status == 'PE' || $response->payment->status == 'CO'))
 			{
-				$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_co_id'));
-			}
-			elseif ($response->payment->status == 'PE')
-			{
-				$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_pe_id'));
-			}
+				$this->_log('CALLBACK SUCCESS | Order: ' . $this->session->data['order_id'] . ', Status: ' . $response->payment->status);
 
-			$this->redirect($this->url->link('checkout/success'));
+				$this->load->model('checkout/order');
+
+				if ($response->payment->status == 'CO')
+				{
+					$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_co_id'));
+				}
+				elseif ($response->payment->status == 'PE')
+				{
+					$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_pe_id'));
+				}
+
+				$this->redirect($this->url->link('checkout/success'));
+			}
 		}
 		else
 		{
