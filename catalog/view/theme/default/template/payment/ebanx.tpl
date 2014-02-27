@@ -49,7 +49,9 @@
       toggleInstallmentsCards();
     });
 
-    $('#button-confirm').bind('click', function() {
+    $('#button-confirm').bind('click', function(e) {
+      e.preventDefault(); // Prevent default event (posts the form)
+
       $.ajax({
         url: 'index.php?route=payment/ebanx/checkout',
         type: 'post',

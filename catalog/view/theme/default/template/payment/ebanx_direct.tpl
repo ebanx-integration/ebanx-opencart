@@ -260,8 +260,9 @@ ul.payment-methods li label img.active {
      * @return {void}
      */
     $('#button-confirm').bind('click', function(e) {
+      e.preventDefault();
+
       if (validateEbanx() == false) {
-        e.preventDefault();
         return;
       }
 
