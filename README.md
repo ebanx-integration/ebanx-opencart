@@ -46,6 +46,7 @@ git clone --recursive https://github.com/ebanx/ebanx-opencart.git
 11. That's all!
 
 ## Changelog
+* 1.2.2: updated EBANX library
 * 1.2.1: fixed JavaScript event error on checkout.
 * 1.2.0: added log features
 * 1.1.3: fixed PHP notice from OpenCart helper
