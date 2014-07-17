@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<phpunit bootstrap="test/bootstrap.php" colors="true" verbose="true">
-    <testsuites>
-        <testsuite name="Slog test suite">
-            <directory>test</directory>
-        </testsuite>
-    </testsuites>
-</phpunit>
