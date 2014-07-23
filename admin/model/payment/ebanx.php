@@ -71,21 +71,6 @@ class ModelPaymentEbanx extends Model
         $this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "customer_ebanx`;");
 	}
 
-    public function updateMethodCards($value)
-    {
-        $this->_updateSetting('ebanx_direct_cards', $value);
-    }
-
-    public function updateMethodTef($value)
-    {
-        $this->_updateSetting('ebanx_direct_tef', $value);
-    }
-
-    public function updateMethodBoleto($value)
-    {
-        $this->_updateSetting('ebanx_direct_boleto', $value);
-    }
-
     public function updateSettings($arr)
     {
         foreach ($arr as $key => $value)

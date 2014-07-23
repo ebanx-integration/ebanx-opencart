@@ -57,5 +57,9 @@ $_['entry_installments_interest'] = 'Installments Interest Rate:';
 $_['entry_enable_direct']         = 'Direct Mode';
 $_['entry_update_methods']        = 'Update Payment Methods';
 
+$_['entry_enable_boleto'] = 'Enable boleto';
+$_['entry_enable_tef']    = 'Enable TEF';
+$_['entry_enable_cc']     = 'Enable credit cards';
+
 $_['error_permission']   = 'Warning: You do not have permission to modify the EBANX payment configuration!';
 $_['error_merchant_key'] = 'Merchant Key required! If you do not have one please contact us at ebanx.com/contact';

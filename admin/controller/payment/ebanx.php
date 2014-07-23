@@ -52,7 +52,7 @@ class ControllerPaymentEbanx extends Controller
 		\Ebanx\Config::set(array(
 		    'integrationKey' => $this->config->get('ebanx_merchant_key')
 		  , 'testMode'       => ($this->config->get('ebanx_mode') == 'test')
-		  , 'directMode'		 => ($this->config->get('ebanx_direct') == 1)
+		  , 'directMode'		 => true
 		));
 	}
 
@@ -97,8 +97,10 @@ class ControllerPaymentEbanx extends Controller
 		$this->data['entry_enable_installments']   = $this->language->get('entry_enable_installments');
 		$this->data['entry_max_installments']      = $this->language->get('entry_max_installments');
 		$this->data['entry_installments_interest'] = $this->language->get('entry_installments_interest');
-		$this->data['entry_enable_direct'] 				 = $this->language->get('entry_enable_direct');
 		$this->data['entry_update_methods'] 		   = $this->language->get('entry_update_methods');
+    $this->data['entry_enable_boleto'] = $this->language->get('entry_enable_boleto');
+    $this->data['entry_enable_tef']    = $this->language->get('entry_enable_tef');
+    $this->data['entry_enable_cc']     = $this->language->get('entry_enable_cc');
 
 		$this->data['button_save']   = $this->language->get('button_save');
 		$this->data['button_cancel'] = $this->language->get('button_cancel');
@@ -163,11 +165,10 @@ class ControllerPaymentEbanx extends Controller
 			$this->config->set('ebanx_order_status_pe_id', 1);
 			$this->config->set('ebanx_sort_order', 1);
 			$this->config->set('ebanx_enable_installments', 0);
-			$this->config->set('ebanx_max_installments', 6);
-			$this->config->set('ebanx_direct', 0);
+			$this->config->set('ebanx_max_installments', 12);
 			$this->config->set('ebanx_direct_cards', 0);
 			$this->config->set('ebanx_direct_boleto', 1);
-			$this->config->set('ebanx_direct_tef', 0);
+			$this->config->set('ebanx_direct_tef', 1);
 		}
 
 		if (isset($this->request->post['ebanx_merchant_key']))
@@ -287,18 +288,9 @@ class ControllerPaymentEbanx extends Controller
 			$this->data['ebanx_sort_order'] = $this->config->get('ebanx_sort_order');
 		}
 
-		if (isset($this->request->post['ebanx_direct']))
-		{
-			$this->data['ebanx_direct'] = $this->request->post['ebanx_direct'];
-		}
-		else
-		{
-			$this->data['ebanx_direct'] = $this->config->get('ebanx_direct');
-		}
-
-		$this->data['ebanx_direct_cards']  = $this->config->get('ebanx_direct_cards')  ? $this->config->get('ebanx_direct_cards')  : 0;
-		$this->data['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto') ? $this->config->get('ebanx_direct_boleto') : 0;
-		$this->data['ebanx_direct_tef']    = $this->config->get('ebanx_direct_tef')    ? $this->config->get('ebanx_direct_tef')    : 0;
+		$this->data['ebanx_direct_cards']  = $this->request->post['ebanx_direct_cards']  ?: $this->config->get('ebanx_direct_cards');
+		$this->data['ebanx_direct_boleto'] = $this->request->post['ebanx_direct_boleto'] ?: $this->config->get('ebanx_direct_boleto');
+		$this->data['ebanx_direct_tef']    = $this->request->post['ebanx_direct_tef']    ?: $this->config->get('ebanx_direct_tef');
 
 		// Payment update URL
 		$this->data['ebanx_update_payments'] = HTTPS_SERVER . 'index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];
@@ -330,73 +322,6 @@ class ControllerPaymentEbanx extends Controller
 
 		return !$this->error;
 	}
-
-	/**
-	 * Update the payment methods accepted in direct mode
-	 * @return void
-	 */
-	public function updatePaymentMethods()
-  {
-		$this->load->model('payment/ebanx');
-
-		// Use the fake API
-		$ch = curl_init();
-
-		$key  = $this->config->get('ebanx_merchant_key');
-		$url = 'http://integration.ebanx.com/api/getPaymentMethods.php?key=' . $key;
-
-		// Check if test mode is enabled
-		if ($this->config->get('ebanx_mode') == 'test')
-		{
-			$url .= '&test';
-		}
-
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    $response = curl_exec($ch);
-    curl_close($ch);
-
-    $response = json_decode($response);
-
-    if ($response->status == 'SUCCESS')
-    {
-		  //Reset all values
-  		$this->model_payment_ebanx->updateMethodBoleto(0);
-  		$this->model_payment_ebanx->updateMethodTef(0);
-  		$this->model_payment_ebanx->updateMethodCards(0);
-
-    	if (in_array('boleto', $response->methods))
-    	{
-    		echo "Boleto is enabled.\n";
-	      $this->model_payment_ebanx->updateMethodBoleto(1);
-    	}
-
-    	if (in_array('credit_cards', $response->methods))
-    	{
-    		echo "Credit cards are enabled.\n";
-	      $this->model_payment_ebanx->updateMethodCards(1);
-    	}
-
-    	if (in_array('tef', $response->methods))
-    	{
-    		echo "Electronic Funds Transfer is enabled.\n";
-	      $this->model_payment_ebanx->updateMethodTef(1);
-    	}
-    }
-    else
-    {
-    	if (isset($response->status) && $response->status == 'ERROR')
-    	{
-	  		echo $response->message;
-	  	}
-	  	else
-	  	{
-	  		echo 'Direct mode is disabled for your merchant account.';
-	  	}
-	  }
-
-    exit;
-  }
 
   /**
    * Shows the EBANX log file

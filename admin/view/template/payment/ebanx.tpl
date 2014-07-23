@@ -146,7 +146,7 @@
             <td><?php echo $entry_max_installments ?></td>
             <td>
               <select name="ebanx_max_installments">
-                <?php for ($i = 1; $i <= 6; $i++): ?>
+                <?php for ($i = 1; $i <= 12; $i++): ?>
                   <option value="<?php echo $i ?>" <?php if ($ebanx_max_installments == $i) echo 'selected="selected"' ?>><?php echo $i ?></option>
                 <? endfor ?>
               </select>
@@ -159,9 +159,9 @@
           </tr>
 
           <tr>
-            <td><?php echo $entry_enable_direct ?></td>
-            <td><select name="ebanx_direct">
-                <?php if ($ebanx_direct): ?>
+            <td><?php echo $entry_enable_boleto ?></td>
+            <td><select name="ebanx_direct_boleto">
+                <?php if ($ebanx_direct_boleto): ?>
                   <option value="1" selected="selected"><?php echo $text_enabled ?></option>
                   <option value="0"><?php echo $text_disabled ?></option>
                 <?php else: ?>
@@ -173,16 +173,30 @@
           </tr>
 
           <tr>
-            <td><?php echo $entry_update_methods ?></td>
-            <td>
-              <input type="hidden" name="ebanx_direct_cards" value="<?php echo intval($ebanx_direct_cards) ?>" />
-              <p>Payment methods availability:</p>
-              <ul>
-                <li>Boleto: <?php echo ($ebanx_direct_boleto == 1) ? 'enabled' : 'disabled' ?></li>
-                <li>Credit cards: <?php echo ($ebanx_direct_cards == 1) ? 'enabled' : 'disabled' ?></li>
-                <li>TEF: <?php echo ($ebanx_direct_tef == 1) ? 'enabled' : 'disabled' ?></li>
-              </ul>
-              <p><a class="button" id="update-payment-methods">Update</a></p>
+            <td><?php echo $entry_enable_tef ?></td>
+            <td><select name="ebanx_direct_tef">
+                <?php if ($ebanx_direct_tef): ?>
+                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
+                  <option value="0"><?php echo $text_disabled ?></option>
+                <?php else: ?>
+                  <option value="1"><?php echo $text_enabled ?></option>
+                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
+                <?php endif ?>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td><?php echo $entry_enable_cc ?></td>
+            <td><select name="ebanx_direct_cards">
+                <?php if ($ebanx_direct_cards): ?>
+                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
+                  <option value="0"><?php echo $text_disabled ?></option>
+                <?php else: ?>
+                  <option value="1"><?php echo $text_enabled ?></option>
+                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
+                <?php endif ?>
+              </select>
             </td>
           </tr>
 
