@@ -554,7 +554,7 @@ class ControllerPaymentEbanx extends Controller
 	{
 		$this->_setupEbanx();
 
-		$hashes = $this->request->post['hash_codes'];
+		$hashes = $_REQUEST['hash_codes'];
 
 		if ($hashes == null)
 		{
@@ -577,9 +577,12 @@ class ControllerPaymentEbanx extends Controller
 				$this->model_checkout_order->update($order_id, $status);
 
 				$this->_log('NOTIFY SUCCESS | Order: ' . $order_id . ', Status: ' . $response->payment->status);
+				echo "OK: {$hash} changed to {$response->payment->status}\n";
+			}
+			else
+			{
+				echo "NOK: {$hash}\n";
 			}
 		}
-
-		echo 'OK';
 	}
 }
