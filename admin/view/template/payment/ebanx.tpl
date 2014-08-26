@@ -148,7 +148,7 @@
               <select name="ebanx_max_installments">
                 <?php for ($i = 1; $i <= 12; $i++): ?>
                   <option value="<?php echo $i ?>" <?php if ($ebanx_max_installments == $i) echo 'selected="selected"' ?>><?php echo $i ?></option>
-                <? endfor ?>
+                <?php endfor ?>
               </select>
             </td>
           </tr>
