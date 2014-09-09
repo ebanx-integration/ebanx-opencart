@@ -105,7 +105,7 @@
         </tbody>
       </table>
     </div>
-  <? endif ?>
+  <?php endif ?>
 
   <div class="buttons">
     <div class="right">
