@@ -55,6 +55,8 @@ $_['entry_card_exp']        = 'Validade';
 $_['entry_ebanx_details']   = 'Pagamento via EBANX';
 $_['entry_interest']        = 'Juros';
 
+$_['entry_tef_details']        = 'Por favor selecione banco para TEF';
+
 $_['entry_please_select']   = 'Por favor selecione';
 $_['entry_month'] = 'Mês';
 $_['entry_year']  = 'Ano';

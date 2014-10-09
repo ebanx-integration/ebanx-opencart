@@ -77,7 +77,7 @@
 
 <form method="post" id="payment">
   <?php if ($enable_installments): ?>
-    <h2>Ebanx Details</h2>
+    <h2>Ebanx Details </h2>
     <div class="content" id="payment">
       <table class="form">
         <tbody>

@@ -35,7 +35,7 @@
  */
 
 $_['heading_title'] = 'EBANX';
-$_['text_title']    = 'EBANX (Boleto Bancário, HSBC, Itaú, Bradesco, Banco do Brasil, Visa, Mastercard)';
+$_['text_title']    = 'EBANX (Boleto Bancário, TEF,Credit Card)';
 
 $_['text_response']     = 'Thanks for using EBANX.';
 $_['text_success']      = 'Your payment was successful.';
@@ -54,6 +54,8 @@ $_['entry_card_type']       = 'Credit Card Type';
 $_['entry_card_exp']        = 'Expiration Date';
 $_['entry_ebanx_details']   = 'Ebanx Details';
 $_['entry_interest']        = 'Interest';
+
+$_['entry_tef_details']        = 'Please select bank for TEF';
 
 $_['entry_please_select']   = 'Please select';
 $_['entry_month'] = 'Month';

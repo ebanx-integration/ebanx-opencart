@@ -98,13 +98,14 @@ class ControllerPaymentEbanx extends Controller
 		$this->data['entry_max_installments']      = $this->language->get('entry_max_installments');
 		$this->data['entry_installments_interest'] = $this->language->get('entry_installments_interest');
 		$this->data['entry_update_methods'] 		   = $this->language->get('entry_update_methods');
-    $this->data['entry_enable_boleto'] = $this->language->get('entry_enable_boleto');
-    $this->data['entry_enable_tef']    = $this->language->get('entry_enable_tef');
-    $this->data['entry_enable_cc']     = $this->language->get('entry_enable_cc');
+	    $this->data['entry_enable_boleto'] = $this->language->get('entry_enable_boleto');
+	    $this->data['entry_enable_tef']    = $this->language->get('entry_enable_tef');
+	    $this->data['entry_enable_cc']     = $this->language->get('entry_enable_cc');
 
 		$this->data['button_save']   = $this->language->get('button_save');
 		$this->data['button_cancel'] = $this->language->get('button_cancel');
 
+		/*This Block returns the warning if any*/
  		if (isset($this->error['warning']))
  		{
 			$this->data['error_warning'] = $this->error['warning'];
@@ -114,6 +115,7 @@ class ControllerPaymentEbanx extends Controller
 			$this->data['error_warning'] = '';
 		}
 
+		/*This Block returns the error code if any*/
  		if (isset($this->error['merchant_key']))
  		{
 			$this->data['error_merchant_key'] = $this->error['merchant_key'];
@@ -132,6 +134,7 @@ class ControllerPaymentEbanx extends Controller
 			$this->data['error_password'] = '';
 		}
 
+		/* Making of Breadcrumbs to be displayed on site*/
   		$this->data['breadcrumbs'] = array();
 
    		$this->data['breadcrumbs'][] = array(
@@ -151,8 +154,11 @@ class ControllerPaymentEbanx extends Controller
 				, 'href'      => $this->url->link('payment/ebanx', 'token=' . $this->session->data['token'], 'SSL')
       	, 'separator' => ' :: '
    		);
+   		/* End Breadcrumb Block*/
 
+   		// URL to be directed when the save button is pressed
 		$this->data['action'] = $this->url->link('payment/ebanx', 'token=' . $this->session->data['token'], 'SSL');
+		// URL to be redirected when cancel button is pressed 
 		$this->data['cancel'] = $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL');
 
 		// Default settings values
@@ -171,6 +177,8 @@ class ControllerPaymentEbanx extends Controller
 			$this->config->set('ebanx_direct_tef', 1);
 		}
 
+		/* This block checks, if the EBANX Integration Key text field is set, it parses it to view 
+		otherwise get the default EBANX text field from the database and parse it*/
 		if (isset($this->request->post['ebanx_merchant_key']))
 		{
 			$this->data['ebanx_merchant_key'] = $this->request->post['ebanx_merchant_key'];
@@ -179,6 +187,7 @@ class ControllerPaymentEbanx extends Controller
 		{
 			$this->data['ebanx_merchant_key'] = $this->config->get('ebanx_merchant_key');
 		}
+
 
 		$this->data['callback'] = HTTP_CATALOG . 'index.php?route=payment/ebanx/callback';
 
@@ -288,33 +297,56 @@ class ControllerPaymentEbanx extends Controller
 			$this->data['ebanx_sort_order'] = $this->config->get('ebanx_sort_order');
 		}
 
-		$this->data['ebanx_direct_cards']  = $this->request->post['ebanx_direct_cards']  ?: $this->config->get('ebanx_direct_cards');
-		$this->data['ebanx_direct_boleto'] = $this->request->post['ebanx_direct_boleto'] ?: $this->config->get('ebanx_direct_boleto');
-		$this->data['ebanx_direct_tef']    = $this->request->post['ebanx_direct_tef']    ?: $this->config->get('ebanx_direct_tef');
+		if(isset($this->request->post['ebanx_direct_cards']))
+		{
+			$this->data['ebanx_direct_cards'] = $this->request->post['ebanx_direct_cards'];
+		}	
+		else
+		{
+			$this->data['ebanx_direct_cards'] = $this->config->get('ebanx_direct_cards');
+		}
 
+		if(isset($this->request->post['ebanx_direct_boleto']))
+		{
+			$this->data['ebanx_direct_boleto'] = $this->request->post['ebanx_direct_boleto']; 
+		}
+		else
+		{
+			$this->data['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto');
+		}
+
+		if(isset($this->request->post['ebanx_direct_tef']))
+		{
+			$this->data['ebanx_direct_tef'] = $this->request->post['ebanx_direct_tef'];
+		}
+		else
+		{
+			$this->data['ebanx_direct_tef'] = $this->config->get('ebanx_direct_tef');
+		}
 		// Payment update URL
 		$this->data['ebanx_update_payments'] = HTTPS_SERVER . 'index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];
 
-		$this->template = 'payment/ebanx.tpl';
-		$this->children = array(
-			'common/header',
-			'common/footer'
-		);
+		$this->template = 'payment/ebanx.tpl';		// Loading the ebanx.tpl template
+		$this->children = array('common/header','common/footer');	// Adding children to our default template i.e., ebanx.tpl 
 
-		$this->response->setOutput($this->render());
+		$this->response->setOutput($this->render());		// Rendering the Output
 	}
 
 	/**
 	 * Validates the new settings
 	 * @return boolean
 	 */
+
+	/* Function that validates the data when Save Button is pressed */
 	protected function validate()
-	{
+	{	
+		/* Block to check the user permission to manipulate the module*/
 		if (!$this->user->hasPermission('modify', 'payment/ebanx'))
 		{
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 
+		/* Block to check if the ebanx_merchant_key is properly set to save into database, otherwise the error is returned*/
 		if (!$this->request->post['ebanx_merchant_key'])
 		{
 			$this->error['merchant_key'] = $this->language->get('error_merchant_key');

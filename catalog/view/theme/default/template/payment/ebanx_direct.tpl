@@ -18,16 +18,55 @@ ul.payment-methods li label {
   float: left;
 }
 ul.payment-methods li label img {
-  opacity: 0.5;
+  opacity: 1;
 }
 ul.payment-methods li label img:hover,
 ul.payment-methods li label img.active {
-  opacity: 1.0;
+  opacity: 0.75;
 }
+
+
+ul.ebanx-tef-info {
+  list-style: none;
+  overflow: hidden;
+  padding-left: 0 !important;
+}
+ul.ebanx-tef-info li {
+  float: left;
+  margin: 0 10px 0 0;
+  overflow: hidden;
+}
+ul.ebanx-tef-info li input {
+  float: left;
+  margin: 0 !important;
+  display: none;
+}
+ul.ebanx-tef-info li label {
+  float: left;
+}
+ul.ebanx-tef-info li label img {
+  opacity: 1;
+}
+ul.ebanx-tef-info li label img:hover,
+ul.ebanx-tef-info li label img.active {
+  opacity: 0.5;
+}
+
+
+
 .ebanx-cc-info {
   display: none;
 }
+
+.ebanx-tef-info {
+  display: none;
+}
+
 #ebanx-error {
+  display: none;
+}
+
+.tef {
   display: none;
 }
 #button-confirm {
@@ -304,10 +343,34 @@ ul.payment-methods li label img.active {
      */
     $('#ebanx_method_boleto').click(function() {
       $('.ebanx-cc-info').hide();
+      $('.tef').hide();
+      updateTotals();
+    });
+    $('#ebanx_method_tef').click(function() {
+      $('.ebanx-cc-info').hide();
+      $('.tef').hide();
       updateTotals();
     });
     $('#ebanx_method_cc').click(function() {
       $('.ebanx-cc-info').show();
+      updateTotals();
+    });
+
+    /* Show/hide TEF options*/
+
+    $('#ebanx_method_boleto').click(function() {
+      $('.ebanx-tef-info').hide();
+      updateTotals();
+    });
+    $('#ebanx_method_cc').click(function() {
+      $('.ebanx-tef-info').hide();
+      $('.tef').hide();
+
+      updateTotals();
+    });
+    $('#ebanx_method_tef').click(function() {
+      $('.ebanx-tef-info').show();
+      $('.tef').show();
       updateTotals();
     });
 
@@ -320,9 +383,17 @@ ul.payment-methods li label img.active {
 
       $('ul.payment-methods li img').removeClass('active');
       self.addClass('active');
-    })
+    });
 
-    /**
+    $('ul.ebanx-tef-info li img').click(function() {
+      var self = $(this);
+
+      $('ul.ebanx-tef-info li img').removeClass('active');
+      self.addClass('active');
+    });
+   
+
+     /**
      * Hides the installments field for Discover cards
      * @return {void}
      */
@@ -341,7 +412,7 @@ ul.payment-methods li label img.active {
 </div>
 
 <form method="post" id="payment">
-  <?php if ($enable_installments): ?>
+  <!--<?php //if ($enable_installments): ?>-->
     <h2><?php echo $entry_ebanx_details ?></h2>
     <div class="content" id="payment">
       <table class="form">
@@ -360,19 +431,33 @@ ul.payment-methods li label img.active {
             <td><?php echo $entry_payment_method ?></td>
             <td>
               <ul class="payment-methods">
+                
+                <?php if ($ebanx_direct_boleto == 1): ?>
+                <li>
+                  <input type="radio" name="ebanx[method]" value="boleto" id="ebanx_method_boleto" checked="checked" active="active" />
+                  <label for="ebanx_method_boleto">
+                    <img src="image/ebanx/pt-ebanx-boleto.png" width="100" height="63">
+                  </label>
+                </li>
+                <?php endif ?>
+
                 <?php if ($ebanx_direct_cards == 1): ?>
                 <li>
                   <input type="radio" name="ebanx[method]" value="creditcard" id="ebanx_method_cc" />
-                  <label for="ebanx_method_cc"><img src="image/ebanx/ebanx-creditcards.png" width="264" height="63"></label>
+                  <label for="ebanx_method_cc">
+                    <img src="image/ebanx/pt-ebanx-creditcard.png" width="100" height="63">
+                  </label>
                 </li>
-                <? endif ?>
+                <?php endif ?>
 
-                <?php if ($ebanx_direct_boleto == 1): ?>
+                <?php if ($ebanx_direct_tef == 1): ?>
                 <li>
-                  <input type="radio" name="ebanx[method]" value="boleto" id="ebanx_method_boleto" checked="checked" />
-                  <label for="ebanx_method_boleto"><img src="image/ebanx/ebanx-boleto.png" width="264" height="63"  class="active"></label>
+                  <input type="radio" name="ebanx[method]" value="tef" id="ebanx_method_tef" />
+                  <label for="ebanx_method_tef">
+                    <img src="image/ebanx/pt-ebanx-tef.png" width="100" height="63">
+                  </label>
                 </li>
-                <? endif ?>
+                <?php endif ?>
               </ul>
             </td>
           </tr>
@@ -434,35 +519,78 @@ ul.payment-methods li label img.active {
               </select>
 
               <select id="ebanx_cc_exp_year" name="ebanx[cc_exp][year]" autocomplete="off">
-                <option value="" selected="selected"><?php echo $entry_year ?></option>
-                <?php for ($i = date('Y'); $i < date('Y') + 15; $i++): ?>
-                  <option value="<?php echo $i ?>"><?php echo $i ?></option>
-                <?php endfor ?>
-              </select>
+                  <option value="" selected="selected"><?php echo $entry_year ?></option>
+                  <?php for ($i = date('Y'); $i < date('Y') + 15; $i++): ?>
+                    <option value="<?php echo $i ?>"><?php echo $i ?></option>
+                  <?php endfor ?>
+                </select>
             </td>
           </tr>
 
           <tr class="ebanx-cc-info">
-            <td><?php echo $entry_installments_number ?></td>
-            <td>
-              <select name="ebanx[installments]" id="ebanx_installments_number">
-                <option value="1">1x de <?php echo $this->currency->format($order_total) ?></option>
-
-                <?php for ($i = 2; $i <= $max_installments; $i++): ?>
-                  <option value="<?php echo $i ?>"><?php echo $i ?>x de <?php echo $this->currency->format($order_total_interest / floatval($i)) ?></option>
-                <?php endfor ?>
+            <?php if ($enable_installments): ?>
+              <td><?php echo $entry_installments_number ?></td>
+              <td>
+                <select name="ebanx[installments]" id="ebanx_installments_number">
+                  <option value="1">1x de <?php echo $this->currency->format($order_total) ?></option>
+                    <?php for ($i = 2; $i <= $max_installments; $i++): ?>
+                      <option value="<?php echo $i ?>"><?php echo $i ?>x de <?php echo $this->currency->format($order_total_interest / floatval($i)) ?></option>
+                    <?php endfor ?>
               </select>
+            </td>
+            <?php endif ?>
+          </tr>
+
+          <tr>
+            <td class="tef"><?php echo $entry_tef_details; ?></td>
+            <td>
+              <ul class="ebanx-tef-info">
+
+                <li>
+                  <input type="radio" name="ebanx_tef" value="itau" id="tef_itau" checked="checked" />
+                  <label for="tef_itau">
+                    <img src="image/ebanx/tef/itau.png" width="50" height="50">
+                  </label>
+                </li>
+                
+                <li>
+                  <input type="radio" name="ebanx_tef" value="bradesco" id="tef_bradesco" />
+                  <label for="tef_bradesco">
+                    <img src="image/ebanx/tef/bradesco.png" width="50" height="50">
+                  </label>
+                </li>
+               
+                <li>
+                  <input type="radio" name="ebanx_tef" value="hsbc" id="tef_hsbc" />
+                  <label for="tef_hsbc">
+                    <img src="image/ebanx/tef/hsbc.png" width="50" height="50">
+                  </label>
+                </li>
+
+                <li>
+                  <input type="radio" name="ebanx_tef" value="bancodobrasil" id="tef_bancodobrasil" />
+                  <label for="tef_bancodobrasil">
+                    <img src="image/ebanx/tef/bancodobrasil.png" width="50" height="50">
+                  </label>
+                </li>
+
+                <li>
+                  <input type="radio" name="ebanx_tef" value="banrisul" id="tef_banrisul" />
+                  <label for="tef_banrisul">
+                    <img src="image/ebanx/tef/banrisul.png" width="50" height="50">
+                  </label>
+                </li>                   
+              </ul>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-  <? endif ?>
+  <!--<?php //endif ?>-->
 
   <div class="buttons">
     <div class="right">
-      <img src="image/ebanx/ebanx-checkout.png" id="button-confirm" />
+      <img src="image/ebanx/en_checkout_m.png" id="button-confirm" />
     </div>
   </div>
 </form>
-

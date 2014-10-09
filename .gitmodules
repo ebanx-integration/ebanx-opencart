@@ -1,6 +1,0 @@
-[submodule "system/library/ebanx-php"]
-	path = system/library/ebanx-php
-	url = https://github.com/ebanx/ebanx-php.git
-[submodule "system/library/slog"]
-	path = system/library/slog
-	url = https://github.com/guhemama/slog.git

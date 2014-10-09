@@ -44,11 +44,11 @@ class ControllerPaymentEbanx extends Controller
 	 * @return void
 	 */
 	protected function _setupEbanx()
-	{
+	{	
 		\Ebanx\Config::set(array(
-		    'integrationKey' => $this->config->get('ebanx_merchant_key')
+		    'integrationKey' => $this->config->get('ebanx_merchant_key') 
 		  , 'testMode'       => ($this->config->get('ebanx_mode') == 'test')
-		  , 'directMode'		 => ($this->config->get('ebanx_direct') == 1)
+		  , 'directMode'     => true
 		));
 	}
 
@@ -61,7 +61,7 @@ class ControllerPaymentEbanx extends Controller
 	{
 		$writer = new \Slog\Writer\File(array(
 				'filename' => 'ebanx'
-			, 'path'		 => DIR_SYSTEM . 'logs'
+			, 	'path'	   => DIR_SYSTEM . 'logs'
 		));
 		$logger = new \Slog\Slog($writer);
 		$logger->write($text);
@@ -91,29 +91,29 @@ class ControllerPaymentEbanx extends Controller
 		$currencyCode    = strtoupper($order_info['currency_code']);
 
 		switch ($currencyCode)
-    {
-      case 'USD':
-        $totalReal = $order_total * 2.5;
-        break;
-      case 'EUR':
-        $totalReal = $order_total * 3.4;
-        break;
-      case 'BRL':
-      default:
-        $totalReal = $order_total;
-        break;
-    }
+	    {
+	      case 'USD':
+	        $totalReal = $order_total * 2.5;
+	        break;
+	      case 'EUR':
+	        $totalReal = $order_total * 3.4;
+	        break;
+	      case 'BRL':
+	      default:
+	        $totalReal = $order_total;
+	        break;
+	    }
 
-    if (($totalReal / 20) < $maxInstallments)
-    {
-	    $maxInstallments = floor($totalReal / 20);
-    }
+	    if (($totalReal / 20) < $maxInstallments)
+	    {
+		    $maxInstallments = floor($totalReal / 20);
+	    }
 
 		$this->data['max_installments'] = $maxInstallments;
 
 		// Form translations
 		$this->language->load('payment/ebanx');
-		$this->data['text_wait'] 							   = $this->language->get('text_wait');
+		$this->data['text_wait'] 				 = $this->language->get('text_wait');
 		$this->data['entry_installments_number'] = $this->language->get('entry_installments_number');
 		$this->data['entry_installments_cc']     = $this->language->get('entry_installments_cc');
 		$this->data['entry_payment_method']      = $this->language->get('entry_payment_method');
@@ -123,10 +123,10 @@ class ControllerPaymentEbanx extends Controller
 		$this->data['entry_card_type']           = $this->language->get('entry_card_type');
 		$this->data['entry_card_exp']            = $this->language->get('entry_card_exp');
 		$this->data['entry_ebanx_details']       = $this->language->get('entry_ebanx_details');
-		$this->data['entry_interest']						 = $this->language->get('entry_interest');
-		$this->data['entry_please_select']   		 = $this->language->get('entry_please_select');
-		$this->data['entry_month'] 						 	 = $this->language->get('entry_month');
-		$this->data['entry_year']  							 = $this->language->get('entry_year');
+		$this->data['entry_interest']			 = $this->language->get('entry_interest');
+		$this->data['entry_please_select']   	 = $this->language->get('entry_please_select');
+		$this->data['entry_month'] 				 = $this->language->get('entry_month');
+		$this->data['entry_year']  				 = $this->language->get('entry_year');
 
 		// Currency symbol and order total for display purposes
 		$this->data['order_total']   = $order_info['total'];
@@ -138,16 +138,18 @@ class ControllerPaymentEbanx extends Controller
 
 		// Render normal or direct checkout page
 		$template = 'ebanx';
-		if ($this->config->get('ebanx_direct') == 1)
-		{
+		//if ($this->config->get('ebanx_direct') == 1)
+		//{
 			// Check if installments are enabled for direct mode
-			$this->data['enable_installments'] = $this->config->get('ebanx_enable_installments');
+		$this->data['enable_installments'] = $this->config->get('ebanx_enable_installments');
 
-			$template .= '_direct';
+		$template .= '_direct';
 
-			// Preload customer data (CPF and DOB)
-			$this->load->model('customer/ebanx');
+		// Preload customer data (CPF and DOB)
+		$this->load->model('customer/ebanx');
     	$info = $this->model_customer_ebanx->findByCustomerId($this->customer->getId());
+
+    	$this->data['entry_tef_details']  = $this->language->get('entry_tef_details');
 
     	$this->data['ebanx_cpf'] = '';
   		$this->data['ebanx_dob'] = '';
@@ -157,7 +159,7 @@ class ControllerPaymentEbanx extends Controller
     		$this->data['ebanx_cpf'] = $info['cpf'];
     		$this->data['ebanx_dob'] = $info['dob'];
     	}
-		}
+		//}
 
 		// Render a custom template if it's available
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/' . $template . '.tpl'))
@@ -191,7 +193,7 @@ class ControllerPaymentEbanx extends Controller
 		}
 
 		$params = array(
-				'name' 					=> $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
+			'name' 					=> $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
 			, 'email' 				=> $order_info['email']
 			, 'amount' 				=> $order_info['total']
 			, 'currency_code' => $this->config->get('config_currency')
@@ -199,7 +201,7 @@ class ControllerPaymentEbanx extends Controller
 			, 'zipcode' 		  => $order_info['payment_postcode']
 			, 'phone_number'  => $order_info['telephone']
 			, 'payment_type_code' 		=> '_all'
-			, 'merchant_payment_code' => $order_info['order_id'] .time()
+			, 'merchant_payment_code' => $order_info['order_id'] . time()
 		);
 
 		// Installments
@@ -224,7 +226,7 @@ class ControllerPaymentEbanx extends Controller
 		}
 
 		$response = \Ebanx\Ebanx::doRequest($params);
-
+		
 		if ($response->status == 'SUCCESS')
 		{
 			$this->_log('SUCCESS | Order: ' . $order_info['order_id'] . ', Hash: ' . $response->payment->hash);
@@ -266,25 +268,25 @@ class ControllerPaymentEbanx extends Controller
 		}
 
 		$params = array(
-	      'mode'      => 'full'
-	    , 'operation' => 'request'
-	    , 'payment'   => array(
-	          'name'              => $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
-	        , 'document'          => preg_replace('/\D/', '', $this->request->post['ebanx']['cpf'])
-	        , 'birth_date'        => $this->request->post['ebanx']['dob']
-	        , 'email'             => $order_info['email']
-	        , 'phone_number'      => $order_info['telephone']
-	        , 'currency_code'     => $this->config->get('config_currency')
-	        , 'amount_total'      => $order_info['total']
-	        , 'payment_type_code' => $this->request->post['ebanx']['method']
-	        , 'merchant_payment_code' => $order_info['order_id']
-	        , 'zipcode'           => $order_info['payment_postcode']
-	        , 'address'           => $address
-	        , 'street_number'     => preg_replace('/[\D]/', '', $address)
-	        , 'city'              => $order_info['payment_city']
-	        , 'state'             => $order_info['payment_zone_code']
-	        , 'country'           => 'br'
-	    )
+		      'mode'      => 'full'
+		    , 'operation' => 'request'
+		    , 'payment'   => array(
+				          'name'              => $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
+				        , 'document'          => preg_replace('/\D/', '', $this->request->post['ebanx']['cpf'])
+				        , 'birth_date'        => $this->request->post['ebanx']['dob']
+				        , 'email'             => $order_info['email']
+				        , 'phone_number'      => $order_info['telephone']
+				        , 'currency_code'     => $this->config->get('config_currency')
+				        , 'amount_total'      => $order_info['total']
+				        , 'payment_type_code' => $this->request->post['ebanx']['method']
+				        , 'merchant_payment_code' => $order_info['order_id']
+				        , 'zipcode'           => $order_info['payment_postcode']
+				        , 'address'           => $address
+				        , 'street_number'     => preg_replace('/[\D]/', '', $address)
+				        , 'city'              => $order_info['payment_city']
+				        , 'state'             => $order_info['payment_zone_code']
+				        , 'country'           => 'br'
+			    	)
 	  );
 
 		// Add installments to order
@@ -323,25 +325,35 @@ class ControllerPaymentEbanx extends Controller
         );
     }
 
+    //if the method is TEF, specifying which bank was selected
+    if ($this->request->post['ebanx']['method'] == 'tef')
+    {	
+    	$params['payment']['payment_type_code'] = $this->request->post['ebanx_tef'];        
+    }
+
+
     // Persist the customer DOB and CPF
     $data = array(
   		  'cpf' => $params['payment']['document']
   		, 'dob' => $params['payment']['birth_date']
   	);
 
+    
   	$id = $this->customer->getId();
     if ($this->model_customer_ebanx->findByCustomerId($id))
-    {
+    {	
+    	// if customer doesn't exist, add it his details into the database
     	$this->model_customer_ebanx->update($id, $data);
     }
     else
     {
+    	// if the customer data is available in the database, update his details
     	$this->model_customer_ebanx->insert($id, $data);
     }
 
     // Do the payment request
 		$response = \Ebanx\Ebanx::doRequest($params);
-
+		
 		if ($response->status == 'SUCCESS')
 		{
 			$this->_log('SUCCESS | Order: ' . $order_info['order_id'] . ', Hash: ' . $response->payment->hash);
@@ -359,8 +371,12 @@ class ControllerPaymentEbanx extends Controller
 				echo $this->_getBaseUrl() . 'index.php?route=payment/ebanx/boleto/&hash=' . $response->payment->hash;
 			}
 			// Else, redirect to callback page
-			else
+			elseif(isset($response->redirect_url))
 			{
+				echo $response->redirect_url;
+			}
+			else
+			{				
 				echo $this->_getBaseUrl() . 'index.php?route=payment/ebanx/callback/&hash=' . $response->payment->hash;
 			}
 		}
@@ -378,7 +394,7 @@ class ControllerPaymentEbanx extends Controller
 			}
 		}
 
-		die();
+		//die();
 	}
 
 	/**
@@ -386,7 +402,8 @@ class ControllerPaymentEbanx extends Controller
 	 * @return void
 	 */
 	public function boleto()
-	{
+	{	
+		//die('This is my message');
 		$this->_setupEbanx();
 
 		$hash  = $this->request->get['hash'];
@@ -432,7 +449,7 @@ class ControllerPaymentEbanx extends Controller
 				$this->data['text_message'] = sprintf($this->language->get('text_customer'), $this->url->link('account/account', '', 'SSL'), $this->url->link('account/order', '', 'SSL'), $this->url->link('account/download', '', 'SSL'), $this->url->link('information/contact'));
 			}
 			else
-			{
+			{	
 				$this->data['text_message'] = sprintf($this->language->get('text_guest'), $this->url->link('information/contact'));
 			}
 
@@ -458,7 +475,7 @@ class ControllerPaymentEbanx extends Controller
 				, 'common/footer'
 				, 'common/header'
 			);
-
+			$this->cart->clear();				// to empty the shopping cart
 			$this->response->setOutput($this->render());
 		}
 		else
@@ -509,7 +526,7 @@ class ControllerPaymentEbanx extends Controller
 		if ($hash && strlen($hash))
 		{
 			$response = \Ebanx\Ebanx::doQuery(array('hash' => $hash));
-
+			
 			// Update the order status, then redirect to the success page
 			if (isset($response->status) && $response->status == 'SUCCESS' && ($response->payment->status == 'PE' || $response->payment->status == 'CO'))
 			{
@@ -527,6 +544,22 @@ class ControllerPaymentEbanx extends Controller
 				}
 
 				$this->redirect($this->url->link('checkout/success'));
+			}
+			else
+			{
+				// if the order fails
+				$this->data['continue'] = $this->url->link('checkout/checkout');
+
+				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl'))
+				{
+					$this->template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
+				}
+				else
+				{
+					$this->template = 'default/template/payment/ebanx_failure.tpl_';
+				}			
+				
+				$this->response->setOutput($this->render());
 			}
 		}
 		else
