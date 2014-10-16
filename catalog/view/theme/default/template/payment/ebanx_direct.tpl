@@ -391,7 +391,7 @@ ul.ebanx-tef-info li label img.active {
       $('ul.ebanx-tef-info li img').removeClass('active');
       self.addClass('active');
     });
-   
+
 
      /**
      * Hides the installments field for Discover cards
@@ -431,12 +431,12 @@ ul.ebanx-tef-info li label img.active {
             <td><?php echo $entry_payment_method ?></td>
             <td>
               <ul class="payment-methods">
-                
+
                 <?php if ($ebanx_direct_boleto == 1): ?>
                 <li>
                   <input type="radio" name="ebanx[method]" value="boleto" id="ebanx_method_boleto" checked="checked" active="active" />
                   <label for="ebanx_method_boleto">
-                    <img src="image/ebanx/pt-ebanx-boleto.png" width="100" height="63">
+                    <img src="image/ebanx/pt-ebanx-boleto.png" width="75">
                   </label>
                 </li>
                 <?php endif ?>
@@ -445,7 +445,7 @@ ul.ebanx-tef-info li label img.active {
                 <li>
                   <input type="radio" name="ebanx[method]" value="creditcard" id="ebanx_method_cc" />
                   <label for="ebanx_method_cc">
-                    <img src="image/ebanx/pt-ebanx-creditcard.png" width="100" height="63">
+                    <img src="image/ebanx/pt-ebanx-creditcard.png" width="75">
                   </label>
                 </li>
                 <?php endif ?>
@@ -454,7 +454,7 @@ ul.ebanx-tef-info li label img.active {
                 <li>
                   <input type="radio" name="ebanx[method]" value="tef" id="ebanx_method_tef" />
                   <label for="ebanx_method_tef">
-                    <img src="image/ebanx/pt-ebanx-tef.png" width="100" height="63">
+                    <img src="image/ebanx/pt-ebanx-tef.png" width="75">
                   </label>
                 </li>
                 <?php endif ?>
@@ -552,14 +552,14 @@ ul.ebanx-tef-info li label img.active {
                     <img src="image/ebanx/tef/itau.png" width="50" height="50">
                   </label>
                 </li>
-                
+
                 <li>
                   <input type="radio" name="ebanx_tef" value="bradesco" id="tef_bradesco" />
                   <label for="tef_bradesco">
                     <img src="image/ebanx/tef/bradesco.png" width="50" height="50">
                   </label>
                 </li>
-               
+
                 <li>
                   <input type="radio" name="ebanx_tef" value="hsbc" id="tef_hsbc" />
                   <label for="tef_hsbc">
@@ -579,7 +579,7 @@ ul.ebanx-tef-info li label img.active {
                   <label for="tef_banrisul">
                     <img src="image/ebanx/tef/banrisul.png" width="50" height="50">
                   </label>
-                </li>                   
+                </li>
               </ul>
             </td>
           </tr>
@@ -590,7 +590,7 @@ ul.ebanx-tef-info li label img.active {
 
   <div class="buttons">
     <div class="right">
-      <img src="image/ebanx/en_checkout_m.png" id="button-confirm" />
+      <img src="image/ebanx/ebanx-checkout.png" id="button-confirm" />
     </div>
   </div>
 </form>

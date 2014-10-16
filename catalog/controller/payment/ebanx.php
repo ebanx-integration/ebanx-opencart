@@ -44,9 +44,9 @@ class ControllerPaymentEbanx extends Controller
 	 * @return void
 	 */
 	protected function _setupEbanx()
-	{	
+	{
 		\Ebanx\Config::set(array(
-		    'integrationKey' => $this->config->get('ebanx_merchant_key') 
+		    'integrationKey' => $this->config->get('ebanx_merchant_key')
 		  , 'testMode'       => ($this->config->get('ebanx_mode') == 'test')
 		  , 'directMode'     => true
 		));
@@ -138,28 +138,26 @@ class ControllerPaymentEbanx extends Controller
 
 		// Render normal or direct checkout page
 		$template = 'ebanx';
-		//if ($this->config->get('ebanx_direct') == 1)
-		//{
-			// Check if installments are enabled for direct mode
+
+		// Check if installments are enabled for direct mode
 		$this->data['enable_installments'] = $this->config->get('ebanx_enable_installments');
 
 		$template .= '_direct';
 
 		// Preload customer data (CPF and DOB)
 		$this->load->model('customer/ebanx');
-    	$info = $this->model_customer_ebanx->findByCustomerId($this->customer->getId());
+  	$info = $this->model_customer_ebanx->findByCustomerId($this->customer->getId());
 
-    	$this->data['entry_tef_details']  = $this->language->get('entry_tef_details');
+  	$this->data['entry_tef_details']  = $this->language->get('entry_tef_details');
 
-    	$this->data['ebanx_cpf'] = '';
-  		$this->data['ebanx_dob'] = '';
+  	$this->data['ebanx_cpf'] = '';
+		$this->data['ebanx_dob'] = '';
 
-    	if ($info)
-    	{
-    		$this->data['ebanx_cpf'] = $info['cpf'];
-    		$this->data['ebanx_dob'] = $info['dob'];
-    	}
-		//}
+  	if ($info)
+  	{
+  		$this->data['ebanx_cpf'] = $info['cpf'];
+  		$this->data['ebanx_dob'] = $info['dob'];
+  	}
 
 		// Render a custom template if it's available
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/' . $template . '.tpl'))
@@ -226,7 +224,7 @@ class ControllerPaymentEbanx extends Controller
 		}
 
 		$response = \Ebanx\Ebanx::doRequest($params);
-		
+
 		if ($response->status == 'SUCCESS')
 		{
 			$this->_log('SUCCESS | Order: ' . $order_info['order_id'] . ', Hash: ' . $response->payment->hash);
@@ -327,8 +325,8 @@ class ControllerPaymentEbanx extends Controller
 
     //if the method is TEF, specifying which bank was selected
     if ($this->request->post['ebanx']['method'] == 'tef')
-    {	
-    	$params['payment']['payment_type_code'] = $this->request->post['ebanx_tef'];        
+    {
+    	$params['payment']['payment_type_code'] = $this->request->post['ebanx_tef'];
     }
 
 
@@ -338,10 +336,10 @@ class ControllerPaymentEbanx extends Controller
   		, 'dob' => $params['payment']['birth_date']
   	);
 
-    
+
   	$id = $this->customer->getId();
     if ($this->model_customer_ebanx->findByCustomerId($id))
-    {	
+    {
     	// if customer doesn't exist, add it his details into the database
     	$this->model_customer_ebanx->update($id, $data);
     }
@@ -353,7 +351,7 @@ class ControllerPaymentEbanx extends Controller
 
     // Do the payment request
 		$response = \Ebanx\Ebanx::doRequest($params);
-		
+
 		if ($response->status == 'SUCCESS')
 		{
 			$this->_log('SUCCESS | Order: ' . $order_info['order_id'] . ', Hash: ' . $response->payment->hash);
@@ -376,7 +374,7 @@ class ControllerPaymentEbanx extends Controller
 				echo $response->redirect_url;
 			}
 			else
-			{				
+			{
 				echo $this->_getBaseUrl() . 'index.php?route=payment/ebanx/callback/&hash=' . $response->payment->hash;
 			}
 		}
@@ -402,7 +400,7 @@ class ControllerPaymentEbanx extends Controller
 	 * @return void
 	 */
 	public function boleto()
-	{	
+	{
 		//die('This is my message');
 		$this->_setupEbanx();
 
@@ -449,7 +447,7 @@ class ControllerPaymentEbanx extends Controller
 				$this->data['text_message'] = sprintf($this->language->get('text_customer'), $this->url->link('account/account', '', 'SSL'), $this->url->link('account/order', '', 'SSL'), $this->url->link('account/download', '', 'SSL'), $this->url->link('information/contact'));
 			}
 			else
-			{	
+			{
 				$this->data['text_message'] = sprintf($this->language->get('text_guest'), $this->url->link('information/contact'));
 			}
 
@@ -526,7 +524,7 @@ class ControllerPaymentEbanx extends Controller
 		if ($hash && strlen($hash))
 		{
 			$response = \Ebanx\Ebanx::doQuery(array('hash' => $hash));
-			
+
 			// Update the order status, then redirect to the success page
 			if (isset($response->status) && $response->status == 'SUCCESS' && ($response->payment->status == 'PE' || $response->payment->status == 'CO'))
 			{
@@ -557,8 +555,8 @@ class ControllerPaymentEbanx extends Controller
 				else
 				{
 					$this->template = 'default/template/payment/ebanx_failure.tpl_';
-				}			
-				
+				}
+
 				$this->response->setOutput($this->render());
 			}
 		}
