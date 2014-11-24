@@ -32,7 +32,6 @@
 
 
 require_once DIR_SYSTEM . 'library/ebanx-php/src/autoload.php';
-require_once DIR_SYSTEM . 'library/slog/src/autoload.php';
 
 /**
  * The payment actions controller
@@ -59,12 +58,7 @@ class ControllerPaymentEbanx extends Controller
 	 */
 	protected function _log($text)
 	{
-		$writer = new \Slog\Writer\File(array(
-				'filename' => 'ebanx'
-			, 	'path'	   => DIR_SYSTEM . 'logs'
-		));
-		$logger = new \Slog\Slog($writer);
-		$logger->write($text);
+		return;
 	}
 
 	/**
