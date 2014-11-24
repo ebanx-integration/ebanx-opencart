@@ -58,16 +58,22 @@ class ModelCustomerEbanx extends Model
    */
   public function insert($id, $data)
   {
-    $sql  = "INSERT INTO " . DB_PREFIX . "customer_ebanx (customer_id, cpf, dob) VALUES ('";
-    $sql .= $id . "', '" . $data['cpf'] . "', '" . $data['dob'] . "')";
-    $this->db->query($sql);
+    if ($id)
+    {
+      $sql  = "INSERT INTO " . DB_PREFIX . "customer_ebanx (customer_id, cpf, dob) VALUES ('";
+      $sql .= $id . "', '" . $data['cpf'] . "', '" . $data['dob'] . "')";
+      $this->db->query($sql);
+    }
   }
 
   public function update($id, $data)
   {
-    $sql  = "UPDATE " . DB_PREFIX . "customer_ebanx ";
-    $sql .= "SET cpf = '" . $data['cpf'] . "', dob = '" . $data['dob'] . "' ";
-    $sql .= "WHERE customer_id = " . $id . ";";
-    $this->db->query($sql);
+    if ($id)
+    {
+      $sql  = "UPDATE " . DB_PREFIX . "customer_ebanx ";
+      $sql .= "SET cpf = '" . $data['cpf'] . "', dob = '" . $data['dob'] . "' ";
+      $sql .= "WHERE customer_id = " . $id . ";";
+      $this->db->query($sql);
+    }
   }
 }
