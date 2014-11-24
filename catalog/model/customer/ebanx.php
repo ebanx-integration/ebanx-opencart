@@ -37,12 +37,15 @@ class ModelCustomerEbanx extends Model
 {
   public function findByCustomerId($id)
   {
-    $sql = "SELECT cpf, dob FROM " . DB_PREFIX . "customer_ebanx WHERE customer_id = " . $id;
-    $query = $this->db->query($sql);
-
-    if ($query->num_rows > 0)
+    if ($id)
     {
-      return $query->row;
+      $sql = "SELECT cpf, dob FROM " . DB_PREFIX . "customer_ebanx WHERE customer_id = " . $id;
+      $query = $this->db->query($sql);
+
+      if ($query->num_rows > 0)
+      {
+        return $query->row;
+      }
     }
 
     return false;
