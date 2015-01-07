@@ -548,7 +548,7 @@ class ControllerPaymentEbanx extends Controller
 				}
 				else
 				{
-					$this->template = 'default/template/payment/ebanx_failure.tpl_';
+					$this->template = 'default/template/payment/ebanx_failure.tpl';
 				}
 
 				$this->response->setOutput($this->render());
