@@ -3,8 +3,12 @@
 This plugin allows you to integrate your OpenCart store with the EBANX payment gateway.
 It includes support to installments and custom interest rates.
 
-## Installation
-### Source
+## Requirements
+
+* OpenCart 1.5.6.4 or less
+
+### Installation
+#### Source
 1. Clone the git repo to your OpenCart root folder
 ```
 git clone --recursive https://github.com/ebanx/ebanx-opencart.git
@@ -25,7 +29,7 @@ git clone --recursive https://github.com/ebanx/ebanx-opencart.git
 ```
 8. That's all!
 
-### Zip file
+#### Zip file
 1. Upload the EBANX OpenCart extension to your OpenCart installation directory.
 2. Extract the file contents to the root OpenCart directory.
 3. Go to your store admin area.
