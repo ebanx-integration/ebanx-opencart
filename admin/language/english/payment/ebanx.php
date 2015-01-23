@@ -39,7 +39,7 @@ $_['text_payment']   = 'Payment';
 $_['text_success']   = 'Success: You have modified the EBANX payment configuration!';
 $_['text_pay_mode']  = 'Pay Mode';
 $_['text_test_mode'] = 'Test Mode';
-$_['text_ebanx']     = '<a href="http://www.ebanx.com/" target="_blank"><img src="view/image/payment/ebanx.png" alt="EBANX Payments in Brazil" title="EBANX Payments in Brazil" style="border: 1px solid #EEEEEE;" /></a>';
+$_['text_ebanx']     = '<a href="http://www.ebanx.com/" target="_blank"><img src="view/image/payment/ebanx.png" height="23" alt="EBANX Payments in Brazil" title="EBANX Payments in Brazil" style="border: 1px solid #EEEEEE;" /></a>';
 
 $_['entry_merchant_key']    = 'Integration Key:';
 $_['entry_callback']        = 'Response URL:';

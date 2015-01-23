@@ -57,11 +57,22 @@ class ControllerPaymentEbanx extends Controller
 	}
 
 	/**
+	 * Checks if it's opencart 1 or 2
+	 * @return mixed
+	 */
+	protected function isOpencart2()
+	{
+		return (intval(VERSION) >= 2);
+	}
+
+	/**
 	 * EBANX settings page
 	 * @return void
 	 */
 	public function index()
 	{
+		$view = array();
+
 		$this->language->load('payment/ebanx');
 		$this->document->setTitle($this->language->get('heading_title'));
 		$this->load->model('setting/setting');
@@ -77,79 +88,79 @@ class ControllerPaymentEbanx extends Controller
 			$this->redirect($this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL'));
 		}
 
-		$this->data['heading_title'] = $this->language->get('heading_title');
+		$view['heading_title'] = $this->language->get('heading_title');
 
-		$this->data['text_enabled'] 	= $this->language->get('text_enabled');
-		$this->data['text_disabled'] 	= $this->language->get('text_disabled');
-		$this->data['text_all_zones'] = $this->language->get('text_all_zones');
-		$this->data['text_pay_mode']  = $this->language->get('text_pay_mode');
-		$this->data['text_test_mode'] = $this->language->get('text_test_mode');
+		$view['text_enabled'] 	= $this->language->get('text_enabled');
+		$view['text_disabled'] 	= $this->language->get('text_disabled');
+		$view['text_all_zones'] = $this->language->get('text_all_zones');
+		$view['text_pay_mode']  = $this->language->get('text_pay_mode');
+		$view['text_test_mode'] = $this->language->get('text_test_mode');
 
-		$this->data['entry_merchant_key'] 	 = $this->language->get('entry_merchant_key');
-		$this->data['entry_test'] 					 = $this->language->get('entry_test');
-		$this->data['entry_order_status_ca'] = $this->language->get('entry_order_status_ca');
-		$this->data['entry_order_status_co'] = $this->language->get('entry_order_status_co');
-		$this->data['entry_order_status_op'] = $this->language->get('entry_order_status_op');
-		$this->data['entry_order_status_pe'] = $this->language->get('entry_order_status_pe');
-		$this->data['entry_geo_zone'] 			 = $this->language->get('entry_geo_zone');
-		$this->data['entry_status'] 				 = $this->language->get('entry_status');
-		$this->data['entry_sort_order'] 		 = $this->language->get('entry_sort_order');
-		$this->data['entry_enable_installments']   = $this->language->get('entry_enable_installments');
-		$this->data['entry_max_installments']      = $this->language->get('entry_max_installments');
-		$this->data['entry_installments_interest'] = $this->language->get('entry_installments_interest');
-		$this->data['entry_update_methods'] 		   = $this->language->get('entry_update_methods');
-	    $this->data['entry_enable_boleto'] = $this->language->get('entry_enable_boleto');
-	    $this->data['entry_enable_tef']    = $this->language->get('entry_enable_tef');
-	    $this->data['entry_enable_cc']     = $this->language->get('entry_enable_cc');
+		$view['entry_merchant_key'] 	 = $this->language->get('entry_merchant_key');
+		$view['entry_test'] 					 = $this->language->get('entry_test');
+		$view['entry_order_status_ca'] = $this->language->get('entry_order_status_ca');
+		$view['entry_order_status_co'] = $this->language->get('entry_order_status_co');
+		$view['entry_order_status_op'] = $this->language->get('entry_order_status_op');
+		$view['entry_order_status_pe'] = $this->language->get('entry_order_status_pe');
+		$view['entry_geo_zone'] 			 = $this->language->get('entry_geo_zone');
+		$view['entry_status'] 				 = $this->language->get('entry_status');
+		$view['entry_sort_order'] 		 = $this->language->get('entry_sort_order');
+		$view['entry_enable_installments']   = $this->language->get('entry_enable_installments');
+		$view['entry_max_installments']      = $this->language->get('entry_max_installments');
+		$view['entry_installments_interest'] = $this->language->get('entry_installments_interest');
+		$view['entry_update_methods'] 		   = $this->language->get('entry_update_methods');
+    $view['entry_enable_boleto'] = $this->language->get('entry_enable_boleto');
+    $view['entry_enable_tef']    = $this->language->get('entry_enable_tef');
+    $view['entry_enable_cc']     = $this->language->get('entry_enable_cc');
 
-		$this->data['button_save']   = $this->language->get('button_save');
-		$this->data['button_cancel'] = $this->language->get('button_cancel');
+		$view['button_save']   = $this->language->get('button_save');
+		$view['button_cancel'] = $this->language->get('button_cancel');
 
 		/*This Block returns the warning if any*/
  		if (isset($this->error['warning']))
  		{
-			$this->data['error_warning'] = $this->error['warning'];
+			$view['error_warning'] = $this->error['warning'];
 		}
 		else
 		{
-			$this->data['error_warning'] = '';
+			$view['error_warning'] = '';
 		}
 
 		/*This Block returns the error code if any*/
  		if (isset($this->error['merchant_key']))
  		{
-			$this->data['error_merchant_key'] = $this->error['merchant_key'];
+			$view['error_merchant_key'] = $this->error['merchant_key'];
 		}
 		else
 		{
-			$this->data['error_merchant_key'] = '';
+			$view['error_merchant_key'] = '';
 		}
 
  		if (isset($this->error['password']))
  		{
-			$this->data['error_password'] = $this->error['password'];
+			$view['error_password'] = $this->error['password'];
 		}
 		else
 		{
-			$this->data['error_password'] = '';
+			$view['error_password'] = '';
 		}
 
 		/* Making of Breadcrumbs to be displayed on site*/
-  		$this->data['breadcrumbs'] = array();
+  		$view['breadcrumbs'] = array();
 
-   		$this->data['breadcrumbs'][] = array(
+   		$view['breadcrumbs'][] = array(
        		'text'      => $this->language->get('text_home')
 			  , 'href'      => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL')
       	, 'separator' => false
    		);
 
-   		$this->data['breadcrumbs'][] = array(
+   		$view['breadcrumbs'][] = array(
        	  'text'      => $this->language->get('text_payment')
 				, 'href'      => $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL')
       	, 'separator' => ' :: '
    		);
 
-   		$this->data['breadcrumbs'][] = array(
+   		$view['breadcrumbs'][] = array(
        	  'text'      => $this->language->get('heading_title')
 				, 'href'      => $this->url->link('payment/ebanx', 'token=' . $this->session->data['token'], 'SSL')
       	, 'separator' => ' :: '
@@ -157,9 +168,9 @@ class ControllerPaymentEbanx extends Controller
    		/* End Breadcrumb Block*/
 
    		// URL to be directed when the save button is pressed
-		$this->data['action'] = $this->url->link('payment/ebanx', 'token=' . $this->session->data['token'], 'SSL');
-		// URL to be redirected when cancel button is pressed 
-		$this->data['cancel'] = $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL');
+		$view['action'] = $this->url->link('payment/ebanx', 'token=' . $this->session->data['token'], 'SSL');
+		// URL to be redirected when cancel button is pressed
+		$view['cancel'] = $this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL');
 
 		// Default settings values
 		if (!$this->config->has('ebanx_merchant_key'))
@@ -177,159 +188,169 @@ class ControllerPaymentEbanx extends Controller
 			$this->config->set('ebanx_direct_tef', 1);
 		}
 
-		/* This block checks, if the EBANX Integration Key text field is set, it parses it to view 
+		/* This block checks, if the EBANX Integration Key text field is set, it parses it to view
 		otherwise get the default EBANX text field from the database and parse it*/
 		if (isset($this->request->post['ebanx_merchant_key']))
 		{
-			$this->data['ebanx_merchant_key'] = $this->request->post['ebanx_merchant_key'];
+			$view['ebanx_merchant_key'] = $this->request->post['ebanx_merchant_key'];
 		}
 		else
 		{
-			$this->data['ebanx_merchant_key'] = $this->config->get('ebanx_merchant_key');
+			$view['ebanx_merchant_key'] = $this->config->get('ebanx_merchant_key');
 		}
 
 
-		$this->data['callback'] = HTTP_CATALOG . 'index.php?route=payment/ebanx/callback';
+		$view['callback'] = HTTP_CATALOG . 'index.php?route=payment/ebanx/callback';
 
 		if (isset($this->request->post['ebanx_mode']))
 		{
-			$this->data['ebanx_mode'] = $this->request->post['ebanx_mode'];
+			$view['ebanx_mode'] = $this->request->post['ebanx_mode'];
 		}
 		else
 		{
-			$this->data['ebanx_mode'] = $this->config->get('ebanx_mode');
+			$view['ebanx_mode'] = $this->config->get('ebanx_mode');
 		}
 
 		if (isset($this->request->post['ebanx_order_status_ca_id']))
 		{
-			$this->data['ebanx_order_status_ca_id'] = $this->request->post['ebanx_order_status_ca_id'];
+			$view['ebanx_order_status_ca_id'] = $this->request->post['ebanx_order_status_ca_id'];
 		}
 		else
 		{
-			$this->data['ebanx_order_status_ca_id'] = $this->config->get('ebanx_order_status_ca_id');
+			$view['ebanx_order_status_ca_id'] = $this->config->get('ebanx_order_status_ca_id');
 		}
 
 		if (isset($this->request->post['ebanx_order_status_co_id']))
 		{
-			$this->data['ebanx_order_status_co_id'] = $this->request->post['ebanx_order_status_co_id'];
+			$view['ebanx_order_status_co_id'] = $this->request->post['ebanx_order_status_co_id'];
 		}
 		else
 		{
-			$this->data['ebanx_order_status_co_id'] = $this->config->get('ebanx_order_status_co_id');
+			$view['ebanx_order_status_co_id'] = $this->config->get('ebanx_order_status_co_id');
 		}
 
 		if (isset($this->request->post['ebanx_order_status_op_id']))
 		{
-			$this->data['ebanx_order_status_op_id'] = $this->request->post['ebanx_order_status_op_id'];
+			$view['ebanx_order_status_op_id'] = $this->request->post['ebanx_order_status_op_id'];
 		}
 		else
 		{
-			$this->data['ebanx_order_status_op_id'] = $this->config->get('ebanx_order_status_op_id');
+			$view['ebanx_order_status_op_id'] = $this->config->get('ebanx_order_status_op_id');
 		}
 
 		if (isset($this->request->post['ebanx_order_status_pe_id']))
 		{
-			$this->data['ebanx_order_status_pe_id'] = $this->request->post['ebanx_order_status_pe_id'];
+			$view['ebanx_order_status_pe_id'] = $this->request->post['ebanx_order_status_pe_id'];
 		}
 		else
 		{
-			$this->data['ebanx_order_status_pe_id'] = $this->config->get('ebanx_order_status_pe_id');
+			$view['ebanx_order_status_pe_id'] = $this->config->get('ebanx_order_status_pe_id');
 		}
 
 		$this->load->model('localisation/order_status');
 
-		$this->data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
+		$view['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
 
 		if (isset($this->request->post['ebanx_geo_zone_id']))
 		{
-			$this->data['ebanx_geo_zone_id'] = $this->request->post['ebanx_geo_zone_id'];
+			$view['ebanx_geo_zone_id'] = $this->request->post['ebanx_geo_zone_id'];
 		}
 		else
 		{
-			$this->data['ebanx_geo_zone_id'] = $this->config->get('ebanx_geo_zone_id');
+			$view['ebanx_geo_zone_id'] = $this->config->get('ebanx_geo_zone_id');
 		}
 
 		$this->load->model('localisation/geo_zone');
-		$this->data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
+		$view['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
 
 		if (isset($this->request->post['ebanx_status']))
 		{
-			$this->data['ebanx_status'] = $this->request->post['ebanx_status'];
+			$view['ebanx_status'] = $this->request->post['ebanx_status'];
 		}
 		else
 		{
-			$this->data['ebanx_status'] = $this->config->get('ebanx_status');
+			$view['ebanx_status'] = $this->config->get('ebanx_status');
 		}
 
 		if (isset($this->request->post['ebanx_enable_installments']))
 		{
-			$this->data['ebanx_enable_installments'] = $this->request->post['ebanx_enable_installments'];
+			$view['ebanx_enable_installments'] = $this->request->post['ebanx_enable_installments'];
 		}
 		else
 		{
-			$this->data['ebanx_enable_installments'] = $this->config->get('ebanx_enable_installments');
+			$view['ebanx_enable_installments'] = $this->config->get('ebanx_enable_installments');
 		}
 
 		if (isset($this->request->post['ebanx_max_installments']))
 		{
-			$this->data['ebanx_max_installments'] = $this->request->post['ebanx_max_installments'];
+			$view['ebanx_max_installments'] = $this->request->post['ebanx_max_installments'];
 		}
 		else
 		{
-			$this->data['ebanx_max_installments'] = $this->config->get('ebanx_max_installments');
+			$view['ebanx_max_installments'] = $this->config->get('ebanx_max_installments');
 		}
 
 		if (isset($this->request->post['ebanx_installments_interest']))
 		{
-			$this->data['ebanx_installments_interest'] = $this->request->post['ebanx_installments_interest'];
+			$view['ebanx_installments_interest'] = $this->request->post['ebanx_installments_interest'];
 		}
 		else
 		{
-			$this->data['ebanx_installments_interest'] = $this->config->get('ebanx_installments_interest');
+			$view['ebanx_installments_interest'] = $this->config->get('ebanx_installments_interest');
 		}
 
 		if (isset($this->request->post['ebanx_sort_order']))
 		{
-			$this->data['ebanx_sort_order'] = $this->request->post['ebanx_sort_order'];
+			$view['ebanx_sort_order'] = $this->request->post['ebanx_sort_order'];
 		}
 		else
 		{
-			$this->data['ebanx_sort_order'] = $this->config->get('ebanx_sort_order');
+			$view['ebanx_sort_order'] = $this->config->get('ebanx_sort_order');
 		}
 
 		if(isset($this->request->post['ebanx_direct_cards']))
 		{
-			$this->data['ebanx_direct_cards'] = $this->request->post['ebanx_direct_cards'];
-		}	
+			$view['ebanx_direct_cards'] = $this->request->post['ebanx_direct_cards'];
+		}
 		else
 		{
-			$this->data['ebanx_direct_cards'] = $this->config->get('ebanx_direct_cards');
+			$view['ebanx_direct_cards'] = $this->config->get('ebanx_direct_cards');
 		}
 
 		if(isset($this->request->post['ebanx_direct_boleto']))
 		{
-			$this->data['ebanx_direct_boleto'] = $this->request->post['ebanx_direct_boleto']; 
+			$view['ebanx_direct_boleto'] = $this->request->post['ebanx_direct_boleto'];
 		}
 		else
 		{
-			$this->data['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto');
+			$view['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto');
 		}
 
 		if(isset($this->request->post['ebanx_direct_tef']))
 		{
-			$this->data['ebanx_direct_tef'] = $this->request->post['ebanx_direct_tef'];
+			$view['ebanx_direct_tef'] = $this->request->post['ebanx_direct_tef'];
 		}
 		else
 		{
-			$this->data['ebanx_direct_tef'] = $this->config->get('ebanx_direct_tef');
+			$view['ebanx_direct_tef'] = $this->config->get('ebanx_direct_tef');
 		}
 		// Payment update URL
-		$this->data['ebanx_update_payments'] = HTTPS_SERVER . 'index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];
+		$view['ebanx_update_payments'] = HTTPS_SERVER . 'index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];
 
-		$this->template = 'payment/ebanx.tpl';		// Loading the ebanx.tpl template
-		$this->children = array('common/header','common/footer');	// Adding children to our default template i.e., ebanx.tpl 
-
-		$this->response->setOutput($this->render());		// Rendering the Output
+		// Render either for OC1 or OC2
+		if ($this->isOpencart2())
+		{
+			$view['header'] = $this->load->controller('common/header');
+			$view['footer'] = $this->load->controller('common/footer');
+			$this->response->setOutput($this->load->view('payment/ebanx.tpl', $view));
+		}
+		else
+		{
+			$this->template = 'payment/ebanx.tpl';
+			$this->children = array('common/header','common/footer');
+			$this->data     = $view;
+			$this->response->setOutput($this->render());
+		}
 	}
 
 	/**
@@ -339,7 +360,7 @@ class ControllerPaymentEbanx extends Controller
 
 	/* Function that validates the data when Save Button is pressed */
 	protected function validate()
-	{	
+	{
 		/* Block to check the user permission to manipulate the module*/
 		if (!$this->user->hasPermission('modify', 'payment/ebanx'))
 		{

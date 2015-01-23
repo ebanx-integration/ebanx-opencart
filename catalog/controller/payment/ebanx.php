@@ -52,6 +52,15 @@ class ControllerPaymentEbanx extends Controller
 	}
 
 	/**
+	 * Checks if it's opencart 1 or 2
+	 * @return mixed
+	 */
+	protected function isOpencart2()
+	{
+		return (intval(VERSION) >= 2);
+	}
+
+	/**
 	 * Save EBANX stuff to log
 	 * @param  string $text Text to log
 	 * @return void
@@ -67,18 +76,20 @@ class ControllerPaymentEbanx extends Controller
 	 */
 	public function index()
 	{
+		$view = array();
+
 		$this->load->model('checkout/order');
 		$order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
-		$this->data['button_confirm'] = $this->language->get('button_confirm');
+		$view['button_confirm'] = $this->language->get('button_confirm');
 
 		// Disable installments on checkout mode
-		$this->data['enable_installments'] = false;
+		$view['enable_installments'] = false;
 
 		// Order total with interest
 		$interest    = $this->config->get('ebanx_installments_interest');
 		$order_total = ($order_info['total'] * (100 + floatval($interest))) / 100.0;
-		$this->data['order_total_interest'] = $order_total;
+		$view['order_total_interest'] = $order_total;
 
 		// Enforce minimum installment value (R$20)
 		$maxInstallments = $this->config->get('ebanx_max_installments');
@@ -103,67 +114,84 @@ class ControllerPaymentEbanx extends Controller
 		    $maxInstallments = floor($totalReal / 20);
 	    }
 
-		$this->data['max_installments'] = $maxInstallments;
+		$view['max_installments'] = $maxInstallments;
 
 		// Form translations
 		$this->language->load('payment/ebanx');
-		$this->data['text_wait'] 				 = $this->language->get('text_wait');
-		$this->data['entry_installments_number'] = $this->language->get('entry_installments_number');
-		$this->data['entry_installments_cc']     = $this->language->get('entry_installments_cc');
-		$this->data['entry_payment_method']      = $this->language->get('entry_payment_method');
-		$this->data['entry_dob']                 = $this->language->get('entry_dob');
-		$this->data['entry_card_name']           = $this->language->get('entry_card_name');
-		$this->data['entry_card_number']         = $this->language->get('entry_card_number');
-		$this->data['entry_card_type']           = $this->language->get('entry_card_type');
-		$this->data['entry_card_exp']            = $this->language->get('entry_card_exp');
-		$this->data['entry_ebanx_details']       = $this->language->get('entry_ebanx_details');
-		$this->data['entry_interest']			 = $this->language->get('entry_interest');
-		$this->data['entry_please_select']   	 = $this->language->get('entry_please_select');
-		$this->data['entry_month'] 				 = $this->language->get('entry_month');
-		$this->data['entry_year']  				 = $this->language->get('entry_year');
+		$view['text_wait'] 				 = $this->language->get('text_wait');
+		$view['entry_installments_number'] = $this->language->get('entry_installments_number');
+		$view['entry_installments_cc']     = $this->language->get('entry_installments_cc');
+		$view['entry_payment_method']      = $this->language->get('entry_payment_method');
+		$view['entry_dob']                 = $this->language->get('entry_dob');
+		$view['entry_card_name']           = $this->language->get('entry_card_name');
+		$view['entry_card_number']         = $this->language->get('entry_card_number');
+		$view['entry_card_type']           = $this->language->get('entry_card_type');
+		$view['entry_card_exp']            = $this->language->get('entry_card_exp');
+		$view['entry_ebanx_details']       = $this->language->get('entry_ebanx_details');
+		$view['entry_interest']			 = $this->language->get('entry_interest');
+		$view['entry_please_select']   	 = $this->language->get('entry_please_select');
+		$view['entry_month'] 				 = $this->language->get('entry_month');
+		$view['entry_year']  				 = $this->language->get('entry_year');
 
 		// Currency symbol and order total for display purposes
-		$this->data['order_total']   = $order_info['total'];
-		$this->data['currency_code'] = $order_info['currency_code'];
+		$view['order_total']   = $order_info['total'];
+		$view['currency_code'] = $order_info['currency_code'];
 
-		$this->data['ebanx_direct_cards']  = $this->config->get('ebanx_direct_cards');
-		$this->data['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto');
-		$this->data['ebanx_direct_tef']    = $this->config->get('ebanx_direct_tef');
-
-		// Render normal or direct checkout page
-		$template = 'ebanx';
+		$view['ebanx_direct_cards']  = $this->config->get('ebanx_direct_cards');
+		$view['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto');
+		$view['ebanx_direct_tef']    = $this->config->get('ebanx_direct_tef');
 
 		// Check if installments are enabled for direct mode
-		$this->data['enable_installments'] = $this->config->get('ebanx_enable_installments');
+		$view['enable_installments'] = $this->config->get('ebanx_enable_installments');
 
-		$template .= '_direct';
+		// Render normal or direct (Brazil) checkout page
+		$template = 'ebanx';
+
+		if ($order_info['payment_iso_code_2'] == 'BR')
+		{
+			$template .= '_direct';
+		}
+		else
+		{
+			$template .= '_checkout';
+		}
 
 		// Preload customer data (CPF and DOB)
 		$this->load->model('customer/ebanx');
   	$info = $this->model_customer_ebanx->findByCustomerId($this->customer->getId());
 
-  	$this->data['entry_tef_details']  = $this->language->get('entry_tef_details');
+  	$view['entry_tef_details']  = $this->language->get('entry_tef_details');
 
-  	$this->data['ebanx_cpf'] = '';
-		$this->data['ebanx_dob'] = '';
+  	$view['ebanx_cpf'] = '';
+		$view['ebanx_dob'] = '';
 
   	if ($info)
   	{
-  		$this->data['ebanx_cpf'] = $info['cpf'];
-  		$this->data['ebanx_dob'] = $info['dob'];
+  		$view['ebanx_cpf'] = $info['cpf'];
+  		$view['ebanx_dob'] = $info['dob'];
   	}
 
 		// Render a custom template if it's available
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/' . $template . '.tpl'))
 		{
-			$this->template = $this->config->get('config_template') . '/template/payment/' . $template . '.tpl';
+			$template = $this->config->get('config_template') . '/template/payment/' . $template . '.tpl';
 		}
 		else
 		{
-			$this->template = 'default/template/payment/' . $template . '.tpl';
+			$template = 'default/template/payment/' . $template . '.tpl';
 		}
 
-		$this->render();
+		// Render either for OC1 or OC2
+		if ($this->isOpencart2())
+		{
+			$this->response->setOutput($this->load->view($template, $view));
+		}
+		else
+		{
+			$this->template = $template;
+			$this->data     = $view;
+			$this->render();
+		}
 	}
 
 	/**
@@ -172,6 +200,7 @@ class ControllerPaymentEbanx extends Controller
 	 */
 	public function checkout()
 	{
+		$view = array();
 		$this->_setupEbanx();
 		$this->load->model('checkout/order');
 		$this->load->model('payment/ebanx');
@@ -185,37 +214,20 @@ class ControllerPaymentEbanx extends Controller
 		}
 
 		$params = array(
-			'name' 					=> $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
+				'name' 					=> $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
 			, 'email' 				=> $order_info['email']
 			, 'amount' 				=> $order_info['total']
-			, 'currency_code' => $this->config->get('config_currency')
+			, 'currency_code' => $order_info['currency_code']
 			, 'address'			  => $address
 			, 'zipcode' 		  => $order_info['payment_postcode']
+			, 'country'  			=> strtolower($order_info['payment_iso_code_2'])
 			, 'phone_number'  => $order_info['telephone']
+			, 'order_number'  => $order_info['order_id']
 			, 'payment_type_code' 		=> '_all'
-			, 'merchant_payment_code' => $order_info['order_id'] . time()
+			, 'merchant_payment_code' => $order_info['order_id']
 		);
 
-		// Installments
-		if (isset($this->request->post['instalments']) && $this->request->post['instalments'] > 1)
-		{
-			$params['instalments']       = $this->request->post['instalments'];
-			$params['payment_type_code'] = $this->request->post['payment_type_code'];
-
-			// Add interest to the order total
-			$interest    			= $this->config->get('ebanx_installments_interest');
-			$order_total 			= ($order_info['total'] * (100 + floatval($interest))) / 100.0;
-			$params['amount'] = number_format($order_total, 2, '.', '');
-
-			// Save installments to total
-			$this->model_payment_ebanx->updateTotalsWithInterest(array(
-				  'order_id'       => $order_info['order_id']
-				, 'total_text'     => $this->currency->format($params['amount'])
-				, 'total_value'    => $params['amount']
-				, 'interest_text'  => $this->currency->format($order_total - $order_info['total'])
-				, 'interest_value' => $order_total - $order_info['total']
-			));
-		}
+		\Ebanx\Config::setDirectMode(false);
 
 		$response = \Ebanx\Ebanx::doRequest($params);
 
@@ -231,12 +243,13 @@ class ControllerPaymentEbanx extends Controller
 			$this->model_checkout_order->confirm($this->session->data['order_id'], $this->config->get('ebanx_order_status_op_id'));
 
 			echo $response->redirect_url;
-			die();
 		}
 		else
 		{
 			$this->_log('ERROR | Order: ' . $order_info['order_id'] . ', Error: ' . $response->status_message);
+			echo $response->status_message;
 		}
+		exit;
 	}
 
 	/**
@@ -245,6 +258,7 @@ class ControllerPaymentEbanx extends Controller
 	 */
 	public function checkoutDirect()
 	{
+		$view = array();
 		$this->_setupEbanx();
 		$this->load->model('checkout/order');
 		$this->load->model('customer/ebanx');
@@ -385,8 +399,6 @@ class ControllerPaymentEbanx extends Controller
 				echo 'Unknown error, please contact the store owner.';
 			}
 		}
-
-		//die();
 	}
 
 	/**
@@ -395,7 +407,7 @@ class ControllerPaymentEbanx extends Controller
 	 */
 	public function boleto()
 	{
-		//die('This is my message');
+		$view = array();
 		$this->_setupEbanx();
 
 		$hash  = $this->request->get['hash'];
@@ -408,67 +420,85 @@ class ControllerPaymentEbanx extends Controller
 
 			$this->document->setTitle($this->language->get('heading_title'));
 
-			$this->data['breadcrumbs'] = array();
+			$view['breadcrumbs'] = array();
 
-			$this->data['breadcrumbs'][] = array(
+			$view['breadcrumbs'][] = array(
 				'href'      => $this->url->link('common/home'),
 				'text'      => $this->language->get('text_home'),
 				'separator' => false
 			);
 
-			$this->data['breadcrumbs'][] = array(
+			$view['breadcrumbs'][] = array(
 				'href'      => $this->url->link('checkout/cart'),
 				'text'      => $this->language->get('text_basket'),
 				'separator' => $this->language->get('text_separator')
 			);
 
-			$this->data['breadcrumbs'][] = array(
+			$view['breadcrumbs'][] = array(
 				'href'      => $this->url->link('checkout/checkout', '', 'SSL'),
 				'text'      => $this->language->get('text_checkout'),
 				'separator' => $this->language->get('text_separator')
 			);
 
-			$this->data['breadcrumbs'][] = array(
+			$view['breadcrumbs'][] = array(
 				'href'      => $this->url->link('checkout/success'),
 				'text'      => $this->language->get('text_success'),
 				'separator' => $this->language->get('text_separator')
 			);
 
-			$this->data['heading_title'] = $this->language->get('heading_title');
+			$view['heading_title'] = $this->language->get('heading_title');
 
 			if ($this->customer->isLogged())
 			{
-				$this->data['text_message'] = sprintf($this->language->get('text_customer'), $this->url->link('account/account', '', 'SSL'), $this->url->link('account/order', '', 'SSL'), $this->url->link('account/download', '', 'SSL'), $this->url->link('information/contact'));
+				$view['text_message'] = sprintf($this->language->get('text_customer'), $this->url->link('account/account', '', 'SSL'), $this->url->link('account/order', '', 'SSL'), $this->url->link('account/download', '', 'SSL'), $this->url->link('information/contact'));
 			}
 			else
 			{
-				$this->data['text_message'] = sprintf($this->language->get('text_guest'), $this->url->link('information/contact'));
+				$view['text_message'] = sprintf($this->language->get('text_guest'), $this->url->link('information/contact'));
 			}
 
-			$this->data['button_continue'] = $this->language->get('button_continue');
-			$this->data['continue'] = $this->url->link('common/home');
+			$view['button_continue'] = $this->language->get('button_continue');
+			$view['continue'] = $this->url->link('common/home');
 
-			$this->data['boleto'] = $query->payment->boleto_url;
+			$view['boleto'] = $query->payment->boleto_url;
 
 			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_boleto.tpl'))
 			{
-				$this->template = $this->config->get('config_template') . '/template/payment/ebanx_boleto.tpl';
+				$template = $this->config->get('config_template') . '/template/payment/ebanx_boleto.tpl';
 			}
 			else
 			{
-				$this->template = 'default/template/payment/ebanx_boleto.tpl';
+				$template = 'default/template/payment/ebanx_boleto.tpl';
 			}
 
-			$this->children = array(
-				  'common/column_left'
-				, 'common/column_right'
-				, 'common/content_top'
-				, 'common/content_bottom'
-				, 'common/footer'
-				, 'common/header'
-			);
-			$this->cart->clear();				// to empty the shopping cart
-			$this->response->setOutput($this->render());
+			// Empty the shopping cart
+			$this->cart->clear();
+
+			// Render either for OC1 or OC2
+			if ($this->isOpencart2())
+			{
+				$view['header']         = $this->load->controller('common/header');
+				$view['footer']         = $this->load->controller('common/footer');
+				$view['column_left']    = $this->load->controller('common/column_left');
+				$view['column_right']   = $this->load->controller('common/column_right');
+				$view['content_bottom'] = $this->load->controller('common/content_bottom');
+				$view['content_top']    = $this->load->controller('common/content_top');
+				$this->response->setOutput($this->load->view($template, $view));
+			}
+			else
+			{
+				$this->template = $template;
+				$this->children = array(
+					  'common/column_left'
+					, 'common/column_right'
+					, 'common/content_top'
+					, 'common/content_bottom'
+					, 'common/footer'
+					, 'common/header'
+				);
+				$this->data     = $view;
+				$this->response->setOutput($this->render());
+			}
 		}
 		else
 		{
@@ -491,27 +521,28 @@ class ControllerPaymentEbanx extends Controller
 	 */
 	public function callback()
 	{
+		$view = array();
 		$this->_setupEbanx();
 
 		$this->language->load('payment/ebanx');
 
-		$this->data['title'] = sprintf($this->language->get('heading_title'), $this->config->get('config_name'));
+		$view['title'] = sprintf($this->language->get('heading_title'), $this->config->get('config_name'));
 
-		$this->data['base'] = $this->config->get('config_url');
+		$view['base'] = $this->config->get('config_url');
 		if (isset($this->request->server['HTTPS']) && ($this->request->server['HTTPS'] == 'on'))
 		{
-			$this->data['base'] = $this->config->get('config_ssl');
+			$view['base'] = $this->config->get('config_ssl');
 		}
 
 		// Setup translations
-		$this->data['language'] 		 = $this->language->get('code');
-		$this->data['direction'] 		 = $this->language->get('direction');
-		$this->data['heading_title'] = sprintf($this->language->get('heading_title'), $this->config->get('config_name'));
-		$this->data['text_response'] = $this->language->get('text_response');
-		$this->data['text_success']  = $this->language->get('text_success');
-		$this->data['text_failure']  = $this->language->get('text_failure');
-		$this->data['text_success_wait'] = sprintf($this->language->get('text_success_wait'), $this->url->link('checkout/success'));
-		$this->data['text_failure_wait'] = sprintf($this->language->get('text_failure_wait'), $this->url->link('checkout/checkout', '', 'SSL'));
+		$view['language'] 		 = $this->language->get('code');
+		$view['direction'] 		 = $this->language->get('direction');
+		$view['heading_title'] = sprintf($this->language->get('heading_title'), $this->config->get('config_name'));
+		$view['text_response'] = $this->language->get('text_response');
+		$view['text_success']  = $this->language->get('text_success');
+		$view['text_failure']  = $this->language->get('text_failure');
+		$view['text_success_wait'] = sprintf($this->language->get('text_success_wait'), $this->url->link('checkout/success'));
+		$view['text_failure_wait'] = sprintf($this->language->get('text_failure_wait'), $this->url->link('checkout/checkout', '', 'SSL'));
 
 		$hash = isset($this->request->get['hash']) ? $this->request->get['hash'] : false;
 
@@ -540,33 +571,41 @@ class ControllerPaymentEbanx extends Controller
 			else
 			{
 				// if the order fails
-				$this->data['continue'] = $this->url->link('checkout/checkout');
+				$view['continue'] = $this->url->link('checkout/checkout');
 
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl'))
 				{
-					$this->template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
+					$template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
 				}
 				else
 				{
-					$this->template = 'default/template/payment/ebanx_failure.tpl';
+					$template = 'default/template/payment/ebanx_failure.tpl';
 				}
-
-				$this->response->setOutput($this->render());
 			}
 		}
 		else
 		{
-			$this->data['continue'] = $this->url->link('checkout/cart');
+			$view['continue'] = $this->url->link('checkout/cart');
 
 			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl'))
 			{
-				$this->template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
+				$template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
 			}
 			else
 			{
-				$this->template = 'default/template/payment/ebanx_failure.tpl';
+				$template = 'default/template/payment/ebanx_failure.tpl';
 			}
+		}
 
+		// Render either for OC1 or OC2
+		if ($this->isOpencart2())
+		{
+			$this->response->setOutput($this->load->view($template, $view));
+		}
+		else
+		{
+			$this->template = $template;
+			$this->data     = $view;
 			$this->response->setOutput($this->render());
 		}
 	}
@@ -577,6 +616,7 @@ class ControllerPaymentEbanx extends Controller
 	 */
 	public function notify()
 	{
+		$view = array();
 		$this->_setupEbanx();
 
 		$hashes = $_REQUEST['hash_codes'];
