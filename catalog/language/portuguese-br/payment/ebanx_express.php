@@ -35,7 +35,7 @@
  */
 
 $_['heading_title'] = 'EBANX';
-$_['text_title']    = 'EBANX (Boleto Bancário, HSBC, Itaú, Bradesco, Banco do Brasil)';
+$_['text_title']    = 'EBANX (Visa, Mastercard)';
 
 $_['text_response']     = 'Obrigado por pagar com EBANX.';
 $_['text_success']      = 'O pagamento foi efetuado com sucesso.';

@@ -52,7 +52,7 @@ class ControllerPaymentEbanx extends Controller
 		\Ebanx\Config::set(array(
 		    'integrationKey' => $this->config->get('ebanx_merchant_key')
 		  , 'testMode'       => ($this->config->get('ebanx_mode') == 'test')
-		  , 'directMode'		 => true
+		  , 'directMode'		 => false
 		));
 	}
 
@@ -100,18 +100,14 @@ class ControllerPaymentEbanx extends Controller
 		$view['entry_test'] 					 = $this->language->get('entry_test');
 		$view['entry_order_status_ca'] = $this->language->get('entry_order_status_ca');
 		$view['entry_order_status_co'] = $this->language->get('entry_order_status_co');
+		$view['entry_order_status_refund'] = $this->language->get('entry_order_status_refund');
+		$view['entry_order_status_chargeback'] = $this->language->get('entry_order_status_chargeback');
 		$view['entry_order_status_op'] = $this->language->get('entry_order_status_op');
 		$view['entry_order_status_pe'] = $this->language->get('entry_order_status_pe');
 		$view['entry_geo_zone'] 			 = $this->language->get('entry_geo_zone');
 		$view['entry_status'] 				 = $this->language->get('entry_status');
 		$view['entry_sort_order'] 		 = $this->language->get('entry_sort_order');
-		$view['entry_enable_installments']   = $this->language->get('entry_enable_installments');
-		$view['entry_max_installments']      = $this->language->get('entry_max_installments');
-		$view['entry_installments_interest'] = $this->language->get('entry_installments_interest');
 		$view['entry_update_methods'] 		   = $this->language->get('entry_update_methods');
-    $view['entry_enable_boleto'] = $this->language->get('entry_enable_boleto');
-    $view['entry_enable_tef']    = $this->language->get('entry_enable_tef');
-    $view['entry_enable_cc']     = $this->language->get('entry_enable_cc');
 
 		$view['button_save']   = $this->language->get('button_save');
 		$view['button_cancel'] = $this->language->get('button_cancel');
@@ -180,12 +176,9 @@ class ControllerPaymentEbanx extends Controller
 			$this->config->set('ebanx_order_status_co_id', 2);
 			$this->config->set('ebanx_order_status_op_id', 1);
 			$this->config->set('ebanx_order_status_pe_id', 1);
+			$this->config->set('ebanx_order_status_refund_id', 11);
+			$this->config->set('ebanx_order_status_chargeback_id', 13);
 			$this->config->set('ebanx_sort_order', 1);
-			$this->config->set('ebanx_enable_installments', 0);
-			$this->config->set('ebanx_max_installments', 12);
-			$this->config->set('ebanx_direct_cards', 0);
-			$this->config->set('ebanx_direct_boleto', 1);
-			$this->config->set('ebanx_direct_tef', 1);
 		}
 
 		/* This block checks, if the EBANX Integration Key text field is set, it parses it to view
@@ -247,6 +240,24 @@ class ControllerPaymentEbanx extends Controller
 			$view['ebanx_order_status_pe_id'] = $this->config->get('ebanx_order_status_pe_id');
 		}
 
+		if (isset($this->request->post['ebanx_order_status_refund_id']))
+		{
+			$view['ebanx_order_status_refund_id'] = $this->request->post['ebanx_order_status_refund_id'];
+		}
+		else
+		{
+			$view['ebanx_order_status_refund_id'] = $this->config->get('ebanx_order_status_refund_id');
+		}
+
+		if (isset($this->request->post['ebanx_order_status_chargeback_id']))
+		{
+			$view['ebanx_order_status_chargeback_id'] = $this->request->post['ebanx_order_status_chargeback_id'];
+		}
+		else
+		{
+			$view['ebanx_order_status_chargeback_id'] = $this->config->get('ebanx_order_status_chargeback_id');
+		}
+
 		$this->load->model('localisation/order_status');
 
 		$view['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
@@ -272,33 +283,6 @@ class ControllerPaymentEbanx extends Controller
 			$view['ebanx_status'] = $this->config->get('ebanx_status');
 		}
 
-		if (isset($this->request->post['ebanx_enable_installments']))
-		{
-			$view['ebanx_enable_installments'] = $this->request->post['ebanx_enable_installments'];
-		}
-		else
-		{
-			$view['ebanx_enable_installments'] = $this->config->get('ebanx_enable_installments');
-		}
-
-		if (isset($this->request->post['ebanx_max_installments']))
-		{
-			$view['ebanx_max_installments'] = $this->request->post['ebanx_max_installments'];
-		}
-		else
-		{
-			$view['ebanx_max_installments'] = $this->config->get('ebanx_max_installments');
-		}
-
-		if (isset($this->request->post['ebanx_installments_interest']))
-		{
-			$view['ebanx_installments_interest'] = $this->request->post['ebanx_installments_interest'];
-		}
-		else
-		{
-			$view['ebanx_installments_interest'] = $this->config->get('ebanx_installments_interest');
-		}
-
 		if (isset($this->request->post['ebanx_sort_order']))
 		{
 			$view['ebanx_sort_order'] = $this->request->post['ebanx_sort_order'];
@@ -308,32 +292,6 @@ class ControllerPaymentEbanx extends Controller
 			$view['ebanx_sort_order'] = $this->config->get('ebanx_sort_order');
 		}
 
-		if(isset($this->request->post['ebanx_direct_cards']))
-		{
-			$view['ebanx_direct_cards'] = $this->request->post['ebanx_direct_cards'];
-		}
-		else
-		{
-			$view['ebanx_direct_cards'] = $this->config->get('ebanx_direct_cards');
-		}
-
-		if(isset($this->request->post['ebanx_direct_boleto']))
-		{
-			$view['ebanx_direct_boleto'] = $this->request->post['ebanx_direct_boleto'];
-		}
-		else
-		{
-			$view['ebanx_direct_boleto'] = $this->config->get('ebanx_direct_boleto');
-		}
-
-		if(isset($this->request->post['ebanx_direct_tef']))
-		{
-			$view['ebanx_direct_tef'] = $this->request->post['ebanx_direct_tef'];
-		}
-		else
-		{
-			$view['ebanx_direct_tef'] = $this->config->get('ebanx_direct_tef');
-		}
 		// Payment update URL
 		$view['ebanx_update_payments'] = HTTPS_SERVER . 'index.php?route=payment/ebanx/updatePaymentMethods&token=' . $_SESSION['token'];
 

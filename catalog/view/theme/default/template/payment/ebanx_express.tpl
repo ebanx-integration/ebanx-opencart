@@ -20,11 +20,6 @@ ul.payment-methods li label {
 ul.payment-methods li label img {
   opacity: 1;
 }
-ul.payment-methods li label img:hover,
-ul.payment-methods li label img.active {
-  opacity: 0.75;
-}
-
 
 ul.ebanx-tef-info {
   list-style: none;
@@ -212,7 +207,7 @@ ul.ebanx-tef-info li label img.active {
       }
 
       // If payment is via credit card, validate its fields
-      if ($('#ebanx_method_cc').is(':checked')) {
+      //if ($('#ebanx_method_cc').is(':checked')) {
         var ccName   = $("input[name='ebanx[cc_name]']")
           , ccNumber = $("input[name='ebanx[cc_number]']")
           , ccCVV    = $("input[name='ebanx[cc_cvv]']")
@@ -244,16 +239,6 @@ ul.ebanx-tef-info li label img.active {
         if (ccExpYear.val().length == 0 || ccExpYear.val() < 2014 || ccExpYear.val() > 2050) {
           return showError('The credit card expiration year is incorrect.', ccExpYear);
         }
-
-        // No installments for Discover cards
-        if (ccType.val() != 'discover') {
-          var installments = parseInt(ccInstallments.val());
-
-          if (installments.length == 0 || installments < 1 || installments > 6) {
-            return showError('The number of installments is incorrect.', ccInstallments);
-          }
-        }
-      }
 
       return true;
     };
@@ -306,7 +291,7 @@ ul.ebanx-tef-info li label img.active {
       }
 
       $.ajax({
-          url: 'index.php?route=payment/ebanx/checkoutDirect'
+          url: 'index.php?route=payment/ebanx_express/checkoutDirect'
         , type: 'post'
         , data: $('#payment select, #payment input[type=text], #payment input[type=radio]:checked')
         , beforeSend: function() {
@@ -324,6 +309,7 @@ ul.ebanx-tef-info li label img.active {
               window.location = response;
             // Otherwise display an error message
             } else {
+              
               $('#payment').before('<div class="warning">' + response + '</div>');
             }
           }
@@ -341,38 +327,9 @@ ul.ebanx-tef-info li label img.active {
      * Show/hide credit card fields
      * @return {[type]} [description]
      */
-    $('#ebanx_method_boleto').click(function() {
-      $('.ebanx-cc-info').hide();
-      $('.tef').hide();
-      updateTotals();
-    });
-    $('#ebanx_method_tef').click(function() {
-      $('.ebanx-cc-info').hide();
-      $('.tef').hide();
-      updateTotals();
-    });
-    $('#ebanx_method_cc').click(function() {
-      $('.ebanx-cc-info').show();
-      updateTotals();
-    });
 
-    /* Show/hide TEF options*/
-
-    $('#ebanx_method_boleto').click(function() {
-      $('.ebanx-tef-info').hide();
-      updateTotals();
-    });
-    $('#ebanx_method_cc').click(function() {
-      $('.ebanx-tef-info').hide();
-      $('.tef').hide();
-
-      updateTotals();
-    });
-    $('#ebanx_method_tef').click(function() {
-      $('.ebanx-tef-info').show();
-      $('.tef').show();
-      updateTotals();
-    });
+    $('.ebanx-cc-info').show();
+    updateTotals();
 
     /**
      * Toggles the payment method image active
@@ -431,33 +388,12 @@ ul.ebanx-tef-info li label img.active {
             <td><?php echo $entry_payment_method ?></td>
             <td>
               <ul class="payment-methods">
-
-                <?php if ($ebanx_direct_boleto == 1): ?>
                 <li>
-                  <input type="radio" name="ebanx[method]" value="boleto" id="ebanx_method_boleto" checked="checked" active="active" />
-                  <label for="ebanx_method_boleto">
-                    <img src="image/ebanx/pt-ebanx-boleto.png" width="75">
-                  </label>
-                </li>
-                <?php endif ?>
-
-                <?php if ($ebanx_direct_cards == 1): ?>
-                <li>
-                  <input type="radio" name="ebanx[method]" value="creditcard" id="ebanx_method_cc" />
+                  <input type="radio" name="ebanx[method]" value="creditcard" id="ebanx_method_cc" checked="checked" active="active" />
                   <label for="ebanx_method_cc">
                     <img src="image/ebanx/pt-ebanx-creditcard.png" width="75">
                   </label>
-                </li>
-                <?php endif ?>
-
-                <?php if ($ebanx_direct_tef == 1): ?>
-                <li>
-                  <input type="radio" name="ebanx[method]" value="tef" id="ebanx_method_tef" />
-                  <label for="ebanx_method_tef">
-                    <img src="image/ebanx/pt-ebanx-tef.png" width="75">
-                  </label>
-                </li>
-                <?php endif ?>
+                </li>         
               </ul>
             </td>
           </tr>

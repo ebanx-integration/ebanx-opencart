@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright (c) 2013, EBANX Tecnologia da Informação Ltda.
  *  All rights reserved.
@@ -31,32 +30,33 @@
  */
 
 /**
- * Frontend translations
+ * Backend translations
  */
 
-$_['heading_title'] = 'EBANX';
-$_['text_title']    = 'EBANX (Boleto Bancário, HSBC, Itaú, Bradesco, Banco do Brasil)';
+$_['heading_title'] = 'EBANX Express';
 
-$_['text_response']     = 'Obrigado por pagar com EBANX.';
-$_['text_success']      = 'O pagamento foi efetuado com sucesso.';
-$_['text_success_wait'] = 'Você será redirecionado em 5 segundos.';
-$_['text_failure']      = 'O pagamento falhou. Por favor tente novamente.';
-$_['text_failure_wait'] = 'Você será redirecionado em 5 segundos.';
-$_['text_wait']         = 'Por favor aguarde...';
+$_['text_payment']   = 'Payment';
+$_['text_success']   = 'Success: You have modified the EBANX payment configuration!';
+$_['text_pay_mode']  = 'Pay Mode';
+$_['text_test_mode'] = 'Test Mode';
+$_['text_ebanx_express']     = '<a href="http://www.ebanx.com/" target="_blank"><img src="view/image/payment/ebanx.png" height="23" alt="EBANX Payments in Brazil" title="EBANX Payments in Brazil" style="border: 1px solid #EEEEEE;" /></a>';
 
-$_['entry_installments_number'] = 'Parcelas';
-$_['entry_installments_cc'] = 'Cartão de Crédito';
-$_['entry_payment_method']  = 'Método de Pagamento';
-$_['entry_dob']             = 'Data de Nascimento';
-$_['entry_card_name']       = 'Nome no Cartão';
-$_['entry_card_number']     = 'Número do Cartão';
-$_['entry_card_type']       = 'Emissor';
-$_['entry_card_exp']        = 'Validade';
-$_['entry_ebanx_details']   = 'Pagamento via EBANX';
-$_['entry_interest']        = 'Juros';
+$_['entry_merchant_key']    = 'Integration Key:';
+$_['entry_callback']        = 'Response URL:';
+$_['entry_test']            = 'Operation Mode:';
+$_['entry_order_status_ca'] = 'Order Status Cancelled:';
+$_['entry_order_status_co'] = 'Order Status Confirmed:';
+$_['entry_order_status_op'] = 'Order Status Open:';
+$_['entry_order_status_pe'] = 'Order Status Pending:';
+$_['entry_order_status_refund'] = 'Order Status Refund:';
+$_['entry_order_status_chargeback'] = 'Order Status Chargeback:';
+$_['entry_geo_zone']        = 'Geo Zone:';
+$_['entry_status']          = 'Status:';
+$_['entry_sort_order']      = 'Sort Order:';
+$_['entry_enable_installments']   = 'Installments:';
+$_['entry_max_installments']      = 'Maximum Installments:';
+$_['entry_installments_interest'] = 'Installments Interest Rate:';
+$_['entry_update_methods']        = 'Update Payment Methods';
 
-$_['entry_tef_details']        = 'Por favor selecione banco para TEF';
-
-$_['entry_please_select']   = 'Por favor selecione';
-$_['entry_month'] = 'Mês';
-$_['entry_year']  = 'Ano';
+$_['error_permission']   = 'Warning: You do not have permission to modify the EBANX payment configuration!';
+$_['error_merchant_key'] = 'Merchant Key required! If you do not have one please contact us at ebanx.com/contact';

@@ -31,32 +31,49 @@
  */
 
 /**
- * Frontend translations
+ * Model for the customer_ebanx table
  */
+class ModelCustomerEbanxExpress extends Model
+{
+  public function findByCustomerId($id)
+  {
+    if ($id)
+    {
+      $sql = "SELECT cpf, dob FROM " . DB_PREFIX . "customer_ebanx WHERE customer_id = " . $id;
+      $query = $this->db->query($sql);
 
-$_['heading_title'] = 'EBANX';
-$_['text_title']    = 'EBANX (Boleto Bancário, HSBC, Itaú, Bradesco, Banco do Brasil)';
+      if ($query->num_rows > 0)
+      {
+        return $query->row;
+      }
+    }
 
-$_['text_response']     = 'Obrigado por pagar com EBANX.';
-$_['text_success']      = 'O pagamento foi efetuado com sucesso.';
-$_['text_success_wait'] = 'Você será redirecionado em 5 segundos.';
-$_['text_failure']      = 'O pagamento falhou. Por favor tente novamente.';
-$_['text_failure_wait'] = 'Você será redirecionado em 5 segundos.';
-$_['text_wait']         = 'Por favor aguarde...';
+    return false;
+  }
 
-$_['entry_installments_number'] = 'Parcelas';
-$_['entry_installments_cc'] = 'Cartão de Crédito';
-$_['entry_payment_method']  = 'Método de Pagamento';
-$_['entry_dob']             = 'Data de Nascimento';
-$_['entry_card_name']       = 'Nome no Cartão';
-$_['entry_card_number']     = 'Número do Cartão';
-$_['entry_card_type']       = 'Emissor';
-$_['entry_card_exp']        = 'Validade';
-$_['entry_ebanx_details']   = 'Pagamento via EBANX';
-$_['entry_interest']        = 'Juros';
+  /**
+   * Add customer data (CPF and DOB)
+   * @param  array $data
+   * @return void
+   */
+  public function insert($id, $data)
+  {
+    if ($id)
+    {
+      $sql  = "INSERT INTO " . DB_PREFIX . "customer_ebanx (customer_id, cpf, dob) VALUES ('";
+      $sql .= $id . "', '" . $data['cpf'] . "', '" . $data['dob'] . "')";
+      $this->db->query($sql);
+    }
+  }
 
-$_['entry_tef_details']        = 'Por favor selecione banco para TEF';
-
-$_['entry_please_select']   = 'Por favor selecione';
-$_['entry_month'] = 'Mês';
-$_['entry_year']  = 'Ano';
+  public function update($id, $data)
+  {
+    if ($id)
+    {
+      $sql  = "UPDATE " . DB_PREFIX . "customer_ebanx ";
+      $sql .= "SET cpf = '" . $data['cpf'] . "', dob = '" . $data['dob'] . "' ";
+      $sql .= "WHERE customer_id = " . $id . ";";
+      $this->db->query($sql);
+    }
+  }
+}

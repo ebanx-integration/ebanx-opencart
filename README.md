@@ -21,7 +21,7 @@ git clone --recursive https://github.com/ebanx/ebanx-opencart.git
 7. Go to the EBANX Merchant Area, then to **Integration > Merchant Options**.
   1. Change the _Status Change Notification URL_ to:
 ```
-{YOUR_SITE}/index.php?route=payment/ebanx/notify/
+{YOUR_SITE}/index.php?route=payment/ebanx_notify/notify/
 ```
   2. Change the _Response URL_ to:
 ```
@@ -41,7 +41,7 @@ git clone --recursive https://github.com/ebanx/ebanx-opencart.git
 10. Go to the EBANX Merchant Area, then to **Integration > Merchant Options**.
   1. Change the _Status Change Notification URL_ to:
 ```
-{YOUR_SITE}/index.php?route=payment/ebanx/notify/
+{YOUR_SITE}/index.php?route=payment/ebanx_notify/notify/
 ```
   2. Change the _Response URL_ to:
 ```
@@ -50,6 +50,7 @@ git clone --recursive https://github.com/ebanx/ebanx-opencart.git
 11. That's all!
 
 ## Changelog
+* 2.2.0: Created EBANX Standard and EBANX Express modules for separate payment methods processing
 * 2.1.0: Peru support
 * 2.0.0: implemented the Direct API.
 * 1.2.2: updated EBANX library

@@ -35,7 +35,7 @@
  */
 
 $_['heading_title'] = 'EBANX';
-$_['text_title']    = 'EBANX (Boleto Bancário, TEF,Credit Card)';
+$_['text_title']    = 'EBANX (Boleto Bancário, TEF)';
 
 $_['text_response']     = 'Thanks for using EBANX.';
 $_['text_success']      = 'Your payment was successful.';

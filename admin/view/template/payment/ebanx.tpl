@@ -114,6 +114,34 @@
           </tr>
 
           <tr>
+            <td><?php echo $entry_order_status_refund ?></td>
+            <td><select name="ebanx_order_status_refund_id">
+                <?php foreach ($order_statuses as $order_status): ?>
+                  <?php if ($order_status['order_status_id'] == $ebanx_order_status_refund_id): ?>
+                    <option value="<?php echo $order_status['order_status_id'] ?>" selected="selected"><?php echo $order_status['name'] ?></option>
+                  <?php else: ?>
+                    <option value="<?php echo $order_status['order_status_id'] ?>"><?php echo $order_status['name'] ?></option>
+                  <?php endif ?>
+                <?php endforeach ?>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td><?php echo $entry_order_status_chargeback ?></td>
+            <td><select name="ebanx_order_status_chargeback_id">
+                <?php foreach ($order_statuses as $order_status): ?>
+                  <?php if ($order_status['order_status_id'] == $ebanx_order_status_chargeback_id): ?>
+                    <option value="<?php echo $order_status['order_status_id'] ?>" selected="selected"><?php echo $order_status['name'] ?></option>
+                  <?php else: ?>
+                    <option value="<?php echo $order_status['order_status_id'] ?>"><?php echo $order_status['name'] ?></option>
+                  <?php endif ?>
+                <?php endforeach ?>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
             <td><?php echo $entry_geo_zone ?></td>
             <td><select name="ebanx_geo_zone_id">
                 <option value="0"><?php echo $text_all_zones ?></option>
@@ -124,78 +152,6 @@
                     <option value="<?php echo $geo_zone['geo_zone_id'] ?>"><?php echo $geo_zone['name'] ?></option>
                   <?php endif ?>
                 <?php endforeach ?>
-              </select>
-            </td>
-          </tr>
-
-          <tr>
-            <td><?php echo $entry_enable_installments ?></td>
-            <td><select name="ebanx_enable_installments">
-                <?php if ($ebanx_enable_installments): ?>
-                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
-                  <option value="0"><?php echo $text_disabled ?></option>
-                <?php else: ?>
-                  <option value="1"><?php echo $text_enabled ?></option>
-                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
-                <?php endif ?>
-              </select>
-            </td>
-          </tr>
-
-          <tr>
-            <td><?php echo $entry_max_installments ?></td>
-            <td>
-              <select name="ebanx_max_installments">
-                <?php for ($i = 1; $i <= 12; $i++): ?>
-                  <option value="<?php echo $i ?>" <?php if ($ebanx_max_installments == $i) echo 'selected="selected"' ?>><?php echo $i ?></option>
-                <?php endfor ?>
-              </select>
-            </td>
-          </tr>
-
-          <tr>
-            <td><?php echo $entry_installments_interest ?></td>
-            <td><input type="text" name="ebanx_installments_interest" value="<?php echo floatval($ebanx_installments_interest) ?>" /></td>
-          </tr>
-
-          <tr>
-            <td><?php echo $entry_enable_boleto ?></td>
-            <td><select name="ebanx_direct_boleto">
-                <?php if ($ebanx_direct_boleto): ?>
-                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
-                  <option value="0"><?php echo $text_disabled ?></option>
-                <?php else: ?>
-                  <option value="1"><?php echo $text_enabled ?></option>
-                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
-                <?php endif ?>
-              </select>
-            </td>
-          </tr>
-
-          <tr>
-            <td><?php echo $entry_enable_tef ?></td>
-            <td><select name="ebanx_direct_tef">
-                <?php if ($ebanx_direct_tef): ?>
-                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
-                  <option value="0"><?php echo $text_disabled ?></option>
-                <?php else: ?>
-                  <option value="1"><?php echo $text_enabled ?></option>
-                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
-                <?php endif ?>
-              </select>
-            </td>
-          </tr>
-
-          <tr>
-            <td><?php echo $entry_enable_cc ?></td>
-            <td><select name="ebanx_direct_cards">
-                <?php if ($ebanx_direct_cards): ?>
-                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
-                  <option value="0"><?php echo $text_disabled ?></option>
-                <?php else: ?>
-                  <option value="1"><?php echo $text_enabled ?></option>
-                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
-                <?php endif ?>
               </select>
             </td>
           </tr>
@@ -232,20 +188,6 @@ $(document).ready(function() {
     });
   });
 
-  /**
-   * Remove non numeric characters from interest rate
-   */
-  $('input[name=ebanx_installments_interest]').on('change keyup keydown', function(e) {
-    var self  = $(this)
-      , input =  $(this).val()
-      , newInput = input.replace(/[^\d.]/g, '');
-
-    if (input.length == newInput.length) {
-      return;
-    }
-
-    self.val(newInput);
-  });
 });
 </script>
 

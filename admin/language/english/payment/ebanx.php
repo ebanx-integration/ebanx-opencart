@@ -33,7 +33,7 @@
  * Backend translations
  */
 
-$_['heading_title'] = 'EBANX';
+$_['heading_title'] = 'EBANX Standard';
 
 $_['text_payment']   = 'Payment';
 $_['text_success']   = 'Success: You have modified the EBANX payment configuration!';
@@ -48,6 +48,8 @@ $_['entry_order_status_ca'] = 'Order Status Cancelled:';
 $_['entry_order_status_co'] = 'Order Status Confirmed:';
 $_['entry_order_status_op'] = 'Order Status Open:';
 $_['entry_order_status_pe'] = 'Order Status Pending:';
+$_['entry_order_status_refund'] = 'Order Status Refund:';
+$_['entry_order_status_chargeback'] = 'Order Status Chargeback:';
 $_['entry_geo_zone']        = 'Geo Zone:';
 $_['entry_status']          = 'Status:';
 $_['entry_sort_order']      = 'Sort Order:';
