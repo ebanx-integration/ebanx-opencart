@@ -1,4 +1,4 @@
-<?php echo $header; ?>
+<?php echo $header; ?><?php echo $column_left; ?>
 <div id="content">
   <div class="breadcrumb">
     <?php foreach ($breadcrumbs as $breadcrumb): ?>
@@ -11,12 +11,12 @@
   <?php endif ?>
 
   <div class="box">
-    <div class="heading">
+    <div class="page-header">
       <h1><img src="view/image/payment.png" alt="" /> <?php echo $heading_title ?></h1>
       <div class="buttons"><a onclick="$('#form').submit();" class="button"><?php echo $button_save ?></a><a href="<?php echo $cancel ?>" class="button"><?php echo $button_cancel ?></a></div>
     </div>
 
-    <div class="content">
+    <div class="container-fluid">
       <form action="<?php echo $action ?>" method="post" enctype="multipart/form-data" id="form">
         <table class="form">
           <tr>

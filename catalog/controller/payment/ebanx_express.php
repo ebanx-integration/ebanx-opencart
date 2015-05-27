@@ -1,5 +1,8 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 /**
  * Copyright (c) 2013, EBANX Tecnologia da Informação Ltda.
  *  All rights reserved.
@@ -150,9 +153,10 @@ class ControllerPaymentEbanxExpress extends Controller
 		{
 			$template .= '_express';
 		}
-		else
+
+		if ($this->isOpencart2())
 		{
-			$template .= '_express';
+			$template .= '2';
 		}
 
 		// Preload customer data (CPF and DOB)
@@ -163,6 +167,9 @@ class ControllerPaymentEbanxExpress extends Controller
 
   	    $view['ebanx_cpf'] = '';
 		$view['ebanx_dob'] = '';
+		$view['total_view']              = $this->currency->format($order_info['total'], $this->config->get('config_currency'), true, true);
+		$view['interest_view']           = $this->currency->format($order_total - $order_info['total'], $this->config->get('config_currency'), true, true);
+		$view['totalWithInterest']       = $this->currency->format($order_total, $this->config->get('config_currency'), true, true);
 
   	    if ($info)
   	    {
@@ -183,7 +190,7 @@ class ControllerPaymentEbanxExpress extends Controller
 		// Render either for OC1 or OC2
 		if ($this->isOpencart2())
 		{
-			$this->response->setOutput($this->load->view($template, $view));
+			return $this->load->view($template, $view);
 		}
 		else
 		{
@@ -221,11 +228,11 @@ class ControllerPaymentEbanxExpress extends Controller
 				          'name'              => $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
 				        , 'document'          => preg_replace('/\D/', '', $this->request->post['ebanx']['cpf'])
 				        , 'birth_date'        => $this->request->post['ebanx']['dob']
-				        , 'email'             => $order_info['email']
+				        , 'email'             => time() . $order_info['email']
 				        , 'phone_number'      => $order_info['telephone']
 				        , 'currency_code'     => $this->config->get('config_currency')
 				        , 'amount_total'      => $order_info['total']
-				        , 'payment_type_code' => $this->request->post['ebanx']['method']
+				        , 'payment_type_code' => $this->request->post['ebanx']['cc_type']
 				        , 'merchant_payment_code' => $order_info['order_id']
 				        , 'zipcode'           => $order_info['payment_postcode']
 				        , 'address'           => $address
@@ -237,8 +244,7 @@ class ControllerPaymentEbanxExpress extends Controller
 	  );
 
 		// Add installments to order
-		if ($this->request->post['ebanx']['method'] == 'creditcard' &&
-			  isset($this->request->post['ebanx']['installments']) && intval($this->request->post['ebanx']['installments']) > 1 &&
+		if (isset($this->request->post['ebanx']['installments']) && intval($this->request->post['ebanx']['installments']) > 1 &&
 			  $this->request->post['ebanx']['cc_type'] != 'discover')
 		{
 			$params['payment']['instalments']       = $this->request->post['ebanx']['installments'];
@@ -260,24 +266,14 @@ class ControllerPaymentEbanxExpress extends Controller
 		}
 
     // Add credit card fields if the method is credit card
-    if ($this->request->post['ebanx']['method'] == 'creditcard')
-    {
-        $params['payment']['payment_type_code'] = $this->request->post['ebanx']['cc_type'];
-        $params['payment']['creditcard'] = array(
-            'card_name'     => $this->request->post['ebanx']['cc_name']
-          , 'card_number'   => $this->request->post['ebanx']['cc_number']
-          , 'card_cvv'      => $this->request->post['ebanx']['cc_cvv']
-          , 'card_due_date' => str_pad($this->request->post['ebanx']['cc_exp']['month'], 2, '0', STR_PAD_LEFT)
-          										 . '/' . $this->request->post['ebanx']['cc_exp']['year']
-        );
-    }
-
-    //if the method is TEF, specifying which bank was selected
-    if ($this->request->post['ebanx']['method'] == 'tef')
-    {
-    	$params['payment']['payment_type_code'] = $this->request->post['ebanx_tef'];
-    }
-
+    $params['payment']['payment_type_code'] = $this->request->post['ebanx']['cc_type'];
+    $params['payment']['creditcard'] = array(
+        'card_name'     => $this->request->post['ebanx']['cc_name']
+      , 'card_number'   => $this->request->post['ebanx']['cc_number']
+      , 'card_cvv'      => $this->request->post['ebanx']['cc_cvv']
+      , 'card_due_date' => str_pad($this->request->post['ebanx']['cc_exp']['month'], 2, '0', STR_PAD_LEFT)
+      										 . '/' . $this->request->post['ebanx']['cc_exp']['year']
+    );
 
     // Persist the customer DOB and CPF
     $data = array(
@@ -310,7 +306,14 @@ class ControllerPaymentEbanxExpress extends Controller
 
 			$this->load->model('checkout/order');
 
-			$this->model_checkout_order->confirm($this->session->data['order_id'], $this->config->get('ebanx_express_order_status_op_id'));
+			if($this->isOpencart2())
+			{
+				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('free_checkout_order_status_id'));
+			}
+			else
+			{
+				$this->model_checkout_order->confirm($this->session->data['order_id'], $this->config->get('ebanx_express_order_status_op_id'));
+			}			
 
 			// If payment method is boleto, redirect to boleto page
 			if ($response->payment->payment_type_code == 'boleto')
@@ -389,48 +392,82 @@ class ControllerPaymentEbanxExpress extends Controller
 			// Update the order status, then redirect to the success page
 			if (isset($response->status) && $response->status == 'SUCCESS' && ($response->payment->status == 'PE' || $response->payment->status == 'CO'))
 			{
-				$this->_log('CALLBACK SUCCESS | Order: ' . $this->session->data['order_id'] . ', Status: ' . $response->payment->status);
+				$this->_log('CALLBACK SUCCESS | Order: ' . $this->data['order_id'] . ', Status: ' . $response->payment->status);
 
 				$this->load->model('checkout/order');
 
-				if ($response->payment->status == 'CO')
+				if($this->isOpencart2())
 				{
-					$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_co_id'));
-				}
-				elseif ($response->payment->status == 'PE')
-				{
-					$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_pe_id'));
-				}
+					if ($response->payment->status == 'CO')
+					{
+						$this->model_checkout_order->addOrderHistory($this->data['order_id'], $this->config->get('ebanx_express_order_status_co_id'));
+					}
+					elseif ($response->payment->status == 'PE')
+					{
+						$this->model_checkout_order->addOrderHistory($this->data['order_id'], $this->config->get('ebanx_express_order_status_pe_id'));
+					}
 
-				$this->redirect($this->url->link('checkout/success'));
+					$this->response->redirect($this->url->link('checkout/success'));
+				}
+				else
+				{
+					if ($response->payment->status == 'CO')
+					{
+						$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_express_order_status_co_id'));
+					}
+					elseif ($response->payment->status == 'PE')
+					{
+						$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_express_order_status_pe_id'));
+					}
+
+					$this->redirect($this->url->link('checkout/success'));
+				}				
 			}
 			else
 			{
 				// if the order fails
-				$view['continue'] = $this->url->link('checkout/checkout');
+				$this->data['continue'] = $this->url->link('checkout/checkout');
 
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl'))
 				{
-					$template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
+					$this->template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
 				}
 				else
 				{
-					$template = 'default/template/payment/ebanx_failure.tpl';
+					$this->template = 'default/template/payment/ebanx_failure.tpl';
 				}
+
+				if ($this->isOpencart2())
+				{
+					$this->response->redirect($this->url->link('checkout/failure'));
+				}
+				else
+				{
+					$this->response->setOutput($this->render());
+				}				
 			}
 		}
 		else
 		{
-			$view['continue'] = $this->url->link('checkout/cart');
+			//$this->data['continue'] = $this->url->link('checkout/cart');
 
 			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl'))
 			{
-				$template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
+				$this->template = $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl';
 			}
 			else
 			{
-				$template = 'default/template/payment/ebanx_failure.tpl';
+				$this->template = 'default/template/payment/ebanx_failure.tpl';
 			}
+
+			if ($this->isOpencart2())
+			{
+				$this->response->redirect($this->url->link('checkout/failure'));
+			}
+			else
+			{
+				$this->response->setOutput($this->render());
+			}	
 		}
 
 		// Render either for OC1 or OC2

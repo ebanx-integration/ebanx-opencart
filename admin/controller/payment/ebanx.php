@@ -85,7 +85,14 @@ class ControllerPaymentEbanx extends Controller
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
-			$this->redirect($this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL'));
+			if($this->isOpencart2())
+			{
+				$this->response->redirect($this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL'));
+			}
+			else
+			{
+				$this->redirect($this->url->link('extension/payment', 'token=' . $this->session->data['token'], 'SSL'));
+			}			
 		}
 
 		$view['heading_title'] = $this->language->get('heading_title');
@@ -300,7 +307,10 @@ class ControllerPaymentEbanx extends Controller
 		{
 			$view['header'] = $this->load->controller('common/header');
 			$view['footer'] = $this->load->controller('common/footer');
-			$this->response->setOutput($this->load->view('payment/ebanx.tpl', $view));
+		    $view['column_left'] = $this->load->controller('common/column_left');
+		    $view['view_log'] = $this->url->link('payment/ebanx/viewLog');
+		    $view['clear_log'] = $this->url->link('payment/ebanx/clearLog');
+			$this->response->setOutput($this->load->view('payment/ebanx2.tpl', $view));
 		}
 		else
 		{

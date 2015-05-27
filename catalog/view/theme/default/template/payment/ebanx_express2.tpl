@@ -69,15 +69,127 @@ ul.ebanx-tef-info li label img.active {
 }
 </style>
 
+
+<div class="alert alert-danger" id="ebanx-error">
+</div>
+
+<div class="form-group required">
+<form method="post" id="payment">
+  <!--<?php //if ($enable_installments): ?>-->
+    <h2><?php echo $entry_ebanx_details ?></h2>
+    <div class="content" id="payment">
+      <table class="form">
+        <tbody>
+          <tr>
+            <td>CPF</td>
+            <td><input type="text" size="14" name="ebanx[cpf]" id="ebanx_cpf" value="<?php echo $ebanx_cpf ?>" /></td>
+          </tr>
+
+          <tr>
+            <td><?php echo $entry_dob ?></td>
+            <td><input type="text" size="10" name="ebanx[dob]" id="ebanx_dob" value="<?php echo $ebanx_dob ?>" /></td>
+          </tr>
+
+          <tr class="ebanx-cc-info">
+            <td><?php echo $entry_card_name ?></td>
+            <td>
+              <input type="text" name="ebanx[cc_name]" value="" size="20" />
+            </td>
+          </tr>
+
+          <tr class="ebanx-cc-info">
+            <td><?php echo $entry_card_number ?></td>
+            <td>
+              <input type="text" name="ebanx[cc_number]" value="" size="20" />
+            </td>
+          </tr>
+
+          <tr class="ebanx-cc-info">
+            <td>CVV</td>
+            <td>
+              <input type="text" name="ebanx[cc_cvv]" value="" size="4" />
+            </td>
+          </tr>
+
+          <tr class="ebanx-cc-info">
+            <td><?php echo $entry_card_type ?></td>
+            <td>
+              <select id="ebanx_cc_type" name="ebanx[cc_type]" autocomplete="off">
+                <option value="" selected="selected"><?php echo $entry_please_select ?></option>
+                <option value="aura">Aura</option>
+                <option value="amex">American Express</option>
+                <option value="diners">Diners</option>
+                <option value="discover">Discover</option>
+                <option value="elo">Elo</option>
+                <option value="mastercard">MasterCard</option>
+                <option value="visa">Visa</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr class="ebanx-cc-info">
+            <td><?php echo $entry_card_exp ?></td>
+            <td>
+              <select id="ebanx_cc_exp_month" name="ebanx[cc_exp][month]" autocomplete="off">
+                <option value="" selected="selected"><?php echo $entry_month ?></option>
+                <option value="1">01 - January</option>
+                <option value="2">02 - February</option>
+                <option value="3">03 - March</option>
+                <option value="4">04 - April</option>
+                <option value="5">05 - May</option>
+                <option value="6">06 - June</option>
+                <option value="7">07 - July</option>
+                <option value="8">08 - August</option>
+                <option value="9">09 - September</option>
+                <option value="10">10 - October</option>
+                <option value="11">11 - November</option>
+                <option value="12">12 - December</option>
+              </select>
+
+              <select id="ebanx_cc_exp_year" name="ebanx[cc_exp][year]" autocomplete="off">
+                  <option value="" selected="selected"><?php echo $entry_year ?></option>
+                  <?php for ($i = date('Y'); $i < date('Y') + 15; $i++): ?>
+                    <option value="<?php echo $i ?>"><?php echo $i ?></option>
+                  <?php endfor ?>
+                </select>
+            </td>
+          </tr>
+
+          <tr class="ebanx-cc-info">
+            <?php if ($enable_installments): ?>
+              <td><?php echo $entry_installments_number ?></td>
+              <td>
+                <select name="ebanx[installments]" id="ebanx_installments_number">
+                  <option value="1">1x de <?php echo $total_view ?></option>
+                    <?php for ($i = 2; $i <= $max_installments; $i++): ?>
+                      <option value="<?php echo $i ?>"><?php echo $i ?>x de <?php echo sprintf("%.2f", $order_total_interest / floatval($i)) ?></option>
+                    <?php endfor ?>
+              </select>
+            </td>
+            <?php endif ?>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  <!--<?php //endif ?>-->
+
+  <div class="buttons">
+    <div class="right">
+      <img src="image/ebanx/ebanx-checkout.png" id="button-confirm" />
+    </div>
+  </div>
+</form>
+</div>
+
 <script>
     /**
      * Hack to show installments interest in the totals
      * @return {void}
      */
     var updateTotals = function() {
-      var total    = '<?php echo $this->currency->format($order_total) ?>'
-        , interest = '<?php echo $this->currency->format($order_total_interest - $order_total) ?>'
-        , totalWithInterest = '<?php echo $this->currency->format($order_total_interest) ?>';
+      var total    = '<?php echo $total_view ?>'
+        , interest = '<?php echo $interest_view ?>'
+        , totalWithInterest = '<?php echo $totalWithInterest ?>';
 
       if (interest.replace(/\D/, '') == '0') {
         return;
@@ -85,7 +197,7 @@ ul.ebanx-tef-info li label img.active {
 
       var installments = $('#ebanx_installments_number');
 
-      if ($('#ebanx_method_cc').is(':checked') && installments && installments.val() > 1) {
+      if ($(installments && installments.val() > 1)) {
         if (!$('#ebanx-discount').length) {
           var interestHtml = '<tr id="ebanx-discount"><td colspan="4" class="price"><b><?php echo $entry_interest ?>:</b></td><td class="total">' + interest + '</td></tr>';
           $(interestHtml).insertBefore($('.checkout-product tfoot tr:last-child'));
@@ -297,7 +409,7 @@ ul.ebanx-tef-info li label img.active {
         , beforeSend: function() {
             $('.payment > .warning').remove();
             $('#button-confirm').fadeToggle();
-            $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /> <?php echo $text_wait; ?></div>');
+            $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /></div>');
           }
         , complete: function() {
             $('#button-confirm').fadeToggle();
@@ -310,14 +422,14 @@ ul.ebanx-tef-info li label img.active {
             // Otherwise display an error message
             } else {
               
-              $('#payment').before('<div class="warning">' + response + '</div>');
+              $('.buttons').before('<div class="alert alert-danger">' + response + '</div>');
             }
           }
       });
     });
 
-    $('#ebanx_dob').datepicker({
-        dateFormat: 'dd/mm/yy'
+    $('#ebanx_dob').datetimepicker({
+        format: 'DD/MM/YYYY'
       , changeMonth: true
       , changeYear: true
       , yearRange: '<?php echo date('Y') - 100 ?>:<?php echo date('Y') - 16 ?>'
@@ -364,112 +476,3 @@ ul.ebanx-tef-info li label img.active {
       }
     });
 </script>
-
-<div class="warning" id="ebanx-error">
-</div>
-
-<form method="post" id="payment">
-  <!--<?php //if ($enable_installments): ?>-->
-    <h2><?php echo $entry_ebanx_details ?></h2>
-    <div class="content" id="payment">
-      <table class="form">
-        <tbody>
-          <tr>
-            <td>CPF</td>
-            <td><input type="text" size="14" name="ebanx[cpf]" id="ebanx_cpf" value="<?php echo $ebanx_cpf ?>" /></td>
-          </tr>
-
-          <tr>
-            <td><?php echo $entry_dob ?></td>
-            <td><input type="text" size="10" name="ebanx[dob]" id="ebanx_dob" value="<?php echo $ebanx_dob ?>" /></td>
-          </tr>
-
-          <tr class="ebanx-cc-info">
-            <td><?php echo $entry_card_name ?></td>
-            <td>
-              <input type="text" name="ebanx[cc_name]" value="" size="20" />
-            </td>
-          </tr>
-
-          <tr class="ebanx-cc-info">
-            <td><?php echo $entry_card_number ?></td>
-            <td>
-              <input type="text" name="ebanx[cc_number]" value="" size="20" />
-            </td>
-          </tr>
-
-          <tr class="ebanx-cc-info">
-            <td>CVV</td>
-            <td>
-              <input type="text" name="ebanx[cc_cvv]" value="" size="4" />
-            </td>
-          </tr>
-
-          <tr class="ebanx-cc-info">
-            <td><?php echo $entry_card_type ?></td>
-            <td>
-              <select id="ebanx_cc_type" name="ebanx[cc_type]" autocomplete="off">
-                <option value="" selected="selected"><?php echo $entry_please_select ?></option>
-                <option value="aura">Aura</option>
-                <option value="amex">American Express</option>
-                <option value="diners">Diners</option>
-                <option value="discover">Discover</option>
-                <option value="elo">Elo</option>
-                <option value="mastercard">MasterCard</option>
-                <option value="visa">Visa</option>
-              </select>
-            </td>
-          </tr>
-
-          <tr class="ebanx-cc-info">
-            <td><?php echo $entry_card_exp ?></td>
-            <td>
-              <select id="ebanx_cc_exp_month" name="ebanx[cc_exp][month]" autocomplete="off">
-                <option value="" selected="selected"><?php echo $entry_month ?></option>
-                <option value="1">01 - January</option>
-                <option value="2">02 - February</option>
-                <option value="3">03 - March</option>
-                <option value="4">04 - April</option>
-                <option value="5">05 - May</option>
-                <option value="6">06 - June</option>
-                <option value="7">07 - July</option>
-                <option value="8">08 - August</option>
-                <option value="9">09 - September</option>
-                <option value="10">10 - October</option>
-                <option value="11">11 - November</option>
-                <option value="12">12 - December</option>
-              </select>
-
-              <select id="ebanx_cc_exp_year" name="ebanx[cc_exp][year]" autocomplete="off">
-                  <option value="" selected="selected"><?php echo $entry_year ?></option>
-                  <?php for ($i = date('Y'); $i < date('Y') + 15; $i++): ?>
-                    <option value="<?php echo $i ?>"><?php echo $i ?></option>
-                  <?php endfor ?>
-                </select>
-            </td>
-          </tr>
-
-          <tr class="ebanx-cc-info">
-            <?php if ($enable_installments): ?>
-              <td><?php echo $entry_installments_number ?></td>
-              <td>
-                <select name="ebanx[installments]" id="ebanx_installments_number">
-                  <option value="1">1x de <?php echo $this->currency->format($order_total) ?></option>
-                    <?php for ($i = 2; $i <= $max_installments; $i++): ?>
-                      <option value="<?php echo $i ?>"><?php echo $i ?>x de <?php echo $this->currency->format($order_total_interest / floatval($i)) ?></option>
-                    <?php endfor ?>
-              </select>
-            </td>
-            <?php endif ?>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  <!--<?php //endif ?>-->
-
-  <div class="buttons">
-    <div class="right">
-      <img src="image/ebanx/ebanx-checkout.png" id="button-confirm" />
-    </div>
-  </div>
-</form>

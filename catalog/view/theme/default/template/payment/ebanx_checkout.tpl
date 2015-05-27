@@ -20,7 +20,7 @@
         , beforeSend: function() {
             $('.payment > .warning').remove();
             $('#button-confirm').fadeToggle();
-            $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /> <?php echo $text_wait; ?></div>');
+            $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /></div>');
           }
         , complete: function() {
             $('#button-confirm').fadeToggle();
@@ -32,7 +32,7 @@
               window.location = response;
             // Otherwise display an error message
             } else {
-              $('#payment').before('<div class="warning">' + response + '</div>');
+              $('.buttons').before('<div class="warning">' + response + '</div>');
             }
           }
       });

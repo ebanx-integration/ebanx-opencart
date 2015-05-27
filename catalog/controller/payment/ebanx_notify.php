@@ -137,8 +137,14 @@ class ControllerPaymentEbanxNotify extends Controller
 				}
 
 				$status = $this->config->get($order_status . strtolower($status_name) . '_id');
-				$this->model_checkout_order->update($order_id, $status);
-
+				if (VERSION >=2)
+				{
+					$this->model_checkout_order->addOrderHistory($order_id, $status);
+				}
+				else
+				{
+					$this->model_checkout_order->update($order_id, $status);
+				}
 
 				$this->_log('NOTIFY SUCCESS | Order: ' . $order_id . ', Status: ' . $status_name);
 				echo "OK: {$hash} changed to {$status_name}\n";

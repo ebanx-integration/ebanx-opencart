@@ -132,7 +132,14 @@ class ControllerPaymentEbanx extends Controller
 			$this->template = 'default/template/payment/' . $template . '.tpl';
 		}
 
-		$this->render();
+		if ($this->isOpencart2())
+		{
+			return $this->load->view($this->template, $this->data);
+		}
+		else
+		{
+			$this->render();
+		}		
 	}
 
 	/**
@@ -178,7 +185,14 @@ class ControllerPaymentEbanx extends Controller
 
 			$this->load->model('checkout/order');
 
-			$this->model_checkout_order->confirm($this->session->data['order_id'], $this->config->get('ebanx_order_status_op_id'));
+			if($this->isOpencart2())
+			{
+				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('free_checkout_order_status_id'));
+			}
+			else
+			{
+				$this->model_checkout_order->confirm($this->session->data['order_id'], $this->config->get('ebanx_order_status_op_id'));
+			}
 
 			echo $response->redirect_url;
 			die();
@@ -200,8 +214,8 @@ class ControllerPaymentEbanx extends Controller
 
 	/**
 	 * Callback action. It's called when returning from EBANX.
-	 * @return void
-	 */
+	 * @return void http://localhost/opencart2020/index.php?route=payment/ebanx/callback/?hash=555cd67df87778d5ada08b71437e2557a60554c72fa72eac&merchant_payment_code=14&payment_type_code=boleto
+	 */ 
 	public function callback()
 	{
 		$this->_setupEbanx();
@@ -225,6 +239,7 @@ class ControllerPaymentEbanx extends Controller
 		$this->data['text_failure']  = $this->language->get('text_failure');
 		$this->data['text_success_wait'] = sprintf($this->language->get('text_success_wait'), $this->url->link('checkout/success'));
 		$this->data['text_failure_wait'] = sprintf($this->language->get('text_failure_wait'), $this->url->link('checkout/checkout', '', 'SSL'));
+		$this->data['terms']         = "";
 
 		$hash = isset($this->request->get['hash']) ? $this->request->get['hash'] : false;
 
@@ -235,20 +250,36 @@ class ControllerPaymentEbanx extends Controller
 			// Update the order status, then redirect to the success page
 			if (isset($response->status) && $response->status == 'SUCCESS' && ($response->payment->status == 'PE' || $response->payment->status == 'CO'))
 			{
-				$this->_log('CALLBACK SUCCESS | Order: ' . $this->session->data['order_id'] . ', Status: ' . $response->payment->status);
+				$this->_log('CALLBACK SUCCESS | Order: ' . $this->data['order_id'] . ', Status: ' . $response->payment->status);
 
 				$this->load->model('checkout/order');
 
-				if ($response->payment->status == 'CO')
+				if($this->isOpencart2())
 				{
-					$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_co_id'));
-				}
-				elseif ($response->payment->status == 'PE')
-				{
-					$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_pe_id'));
-				}
+					if ($response->payment->status == 'CO')
+					{
+						$this->model_checkout_order->addOrderHistory($this->data['order_id'], $this->config->get('ebanx_order_status_co_id'));
+					}
+					elseif ($response->payment->status == 'PE')
+					{
+						$this->model_checkout_order->addOrderHistory($this->data['order_id'], $this->config->get('ebanx_order_status_pe_id'));
+					}
 
-				$this->redirect($this->url->link('checkout/success'));
+					$this->response->redirect($this->url->link('checkout/success'));
+				}
+				else
+				{
+					if ($response->payment->status == 'CO')
+					{
+						$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_co_id'));
+					}
+					elseif ($response->payment->status == 'PE')
+					{
+						$this->model_checkout_order->update($this->session->data['order_id'], $this->config->get('ebanx_order_status_pe_id'));
+					}
+
+					$this->redirect($this->url->link('checkout/success'));
+				}				
 			}
 			else
 			{
@@ -264,12 +295,19 @@ class ControllerPaymentEbanx extends Controller
 					$this->template = 'default/template/payment/ebanx_failure.tpl';
 				}
 
-				$this->response->setOutput($this->render());
+				if ($this->isOpencart2())
+				{
+					$this->response->redirect($this->url->link('checkout/failure'));
+				}
+				else
+				{
+					$this->response->setOutput($this->render());
+				}				
 			}
 		}
 		else
 		{
-			$this->data['continue'] = $this->url->link('checkout/cart');
+			//$this->data['continue'] = $this->url->link('checkout/cart');
 
 			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/payment/ebanx_failure.tpl'))
 			{
@@ -280,7 +318,19 @@ class ControllerPaymentEbanx extends Controller
 				$this->template = 'default/template/payment/ebanx_failure.tpl';
 			}
 
-			$this->response->setOutput($this->render());
+			if ($this->isOpencart2())
+			{
+				$this->response->redirect($this->url->link('checkout/failure'));
+			}
+			else
+			{
+				$this->response->setOutput($this->render());
+			}	
 		}
 	}
+
+	protected function isOpencart2()
+    {
+        return (intval(VERSION) >= 2);
+    }
 }
