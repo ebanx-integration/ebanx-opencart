@@ -26,12 +26,26 @@
       <div class="panel-body">
         <form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data" id="form-ebanx2" class="form-horizontal">
           <div class="form-group required">
-            <label class="col-sm-2 control-label" for="input-account-name"><?php echo $entry_merchant_key; ?></label>
+            <label class="col-sm-2 control-label"><?php echo $entry_merchant_key; ?></label>
             <div class="col-sm-10">
               <input type="text" name="ebanx_merchant_key" value="<?php echo $ebanx_merchant_key; ?>" placeholder="<?php echo $ebanx_merchant_key; ?>" id="input-account-name" class="form-control" />
               <?php if ($error_merchant_key) { ?>
               <div class="text-danger"><?php echo $error_merchant_key; ?></div>
               <?php } ?>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-enable"><?php echo $entry_status; ?></label>
+            <div class="col-sm-10">
+              <select name="ebanx_status">
+                <?php if ($ebanx_status): ?>
+                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
+                  <option value="0"><?php echo $text_disabled ?></option>
+                <?php else: ?>
+                  <option value="1"><?php echo $text_enabled ?></option>
+                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
+                <?php endif ?>
+              </select>
             </div>
           </div>
           <div class="form-group">

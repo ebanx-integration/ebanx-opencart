@@ -53,6 +53,20 @@
             </div>
           </div>
           <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-enable"><?php echo $entry_status; ?></label>
+            <div class="col-sm-10">
+              <select name="ebanx_express_status">
+                <?php if ($ebanx_express_status): ?>
+                  <option value="1" selected="selected"><?php echo $text_enabled ?></option>
+                  <option value="0"><?php echo $text_disabled ?></option>
+                <?php else: ?>
+                  <option value="1"><?php echo $text_enabled ?></option>
+                  <option value="0" selected="selected"><?php echo $text_disabled ?></option>
+                <?php endif ?>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
             <label class="col-sm-2 control-label" for="input-order-status-ca"><?php echo $entry_order_status_ca; ?></span></label>
             <div class="col-sm-10">
               <select name="ebanx_express_order_status_ca_id" id="input-order-status-ca" class="form-control">
