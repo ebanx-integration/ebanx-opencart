@@ -1,8 +1,5 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 /**
  * Copyright (c) 2013, EBANX Tecnologia da Informação Ltda.
  *  All rights reserved.
@@ -308,7 +305,7 @@ class ControllerPaymentEbanxExpress extends Controller
 
 			if($this->isOpencart2())
 			{
-				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('free_checkout_order_status_id'));
+				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('ebanx_express_order_status_op_id'));
 			}
 			else
 			{

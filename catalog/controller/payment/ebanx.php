@@ -30,7 +30,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 require_once DIR_SYSTEM . 'library/ebanx-php/src/autoload.php';
 
 /**
@@ -187,7 +186,7 @@ class ControllerPaymentEbanx extends Controller
 
 			if($this->isOpencart2())
 			{
-				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('free_checkout_order_status_id'));
+				$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $this->config->get('ebanx_order_status_op_id'));
 			}
 			else
 			{
@@ -214,7 +213,7 @@ class ControllerPaymentEbanx extends Controller
 
 	/**
 	 * Callback action. It's called when returning from EBANX.
-	 * @return void http://localhost/opencart2020/index.php?route=payment/ebanx/callback/?hash=555cd67df87778d5ada08b71437e2557a60554c72fa72eac&merchant_payment_code=14&payment_type_code=boleto
+	 * @return void
 	 */ 
 	public function callback()
 	{
