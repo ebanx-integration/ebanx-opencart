@@ -39,10 +39,10 @@ class ModelPaymentEbanx extends Model
      * Install the EBANX table
      * @return void
      */
-	public function install()
+    public function install()
     {
         // Create table to store orders EBANX hash
-		$this->db->query("
+        $this->db->query("
             CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "order_ebanx` (
                 `order_id` int(11) NOT NULL,
                 `ebanx_hash` varchar(255) NOT NULL,
@@ -59,21 +59,22 @@ class ModelPaymentEbanx extends Model
                 PRIMARY KEY `customer_id` (`customer_id`)
             ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
         ");
-	}
+    }
 
     /**
      * Uninstall the EBANX table
      * @return void
      */
-	public function uninstall()
+    public function uninstall()
     {
         return true;
-	}
+    }
 
     public function updateSettings($arr)
     {
         foreach ($arr as $key => $value)
         {
+            var_dump($key);
             $this->_updateSetting($key, $value);
         }
     }
@@ -82,9 +83,15 @@ class ModelPaymentEbanx extends Model
     {
         $sql = "DELETE FROM `" . DB_PREFIX . "setting` WHERE `key` = '$key'";
         $this->db->query($sql);
+        $field = '`group`';
+
+        if (VERSION>=2)
+        {
+            $field = '`code`';
+        }
 
         $sql = "INSERT INTO `" . DB_PREFIX . "setting` (
-                  `group`, `key`, `value`
+                  {$field}, `key`, `value`
                 ) VALUES (
                   'ebanx', '$key', '$value'
                 )";
