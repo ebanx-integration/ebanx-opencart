@@ -169,7 +169,7 @@
           <div class="form-group">
             <label class="col-sm-2 control-label" for="input-ebanx-express-installments"><?php echo $entry_enable_installments; ?></label>
             <div class="col-sm-10">
-              <select name="ebanx_express_max_installments">
+              <select name="ebanx_express_enable_installments">
                 <?php if ($ebanx_express_enable_installments): ?>
                   <option value="1" selected="selected"><?php echo $text_enabled ?></option>
                   <option value="0"><?php echo $text_disabled ?></option>

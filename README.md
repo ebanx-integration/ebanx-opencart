@@ -50,6 +50,7 @@ git clone --recursive https://github.com/ebanx/ebanx-opencart.git
 11. That's all!
 
 ## Changelog
+* 2.3.2: Corrected enable installments in admin
 * 2.3.1: Corrected Admin form
 * 2.3.0: Adapted to Opencart2
 * 2.2.0: Created EBANX Standard and EBANX Express modules for separate payment methods processing
