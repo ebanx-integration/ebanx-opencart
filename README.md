@@ -5,7 +5,7 @@ It includes support to installments and custom interest rates.
 
 ## Requirements
 
-* OpenCart 1.5.6.4 or less
+* OpenCart 1 or OpenCart 2
 
 ### Installation
 #### Source

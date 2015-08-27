@@ -76,7 +76,7 @@ class ControllerPaymentEbanxExpress extends Controller
 	public function index()
 	{
 		$view = array();
-
+		$this->_setupEbanx();
 		$this->load->model('checkout/order');
 		$order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
@@ -94,19 +94,11 @@ class ControllerPaymentEbanxExpress extends Controller
 		$maxInstallments = $this->config->get('ebanx_express_max_installments');
 		$currencyCode    = strtoupper($order_info['currency_code']);
 
-		switch ($currencyCode)
-	    {
-	      case 'USD':
-	        $totalReal = $order_total * 2.5;
-	        break;
-	      case 'EUR':
-	        $totalReal = $order_total * 3.4;
-	        break;
-	      case 'BRL':
-	      default:
-	        $totalReal = $order_total;
-	        break;
-	    }
+		$currencyEbanx = \Ebanx\Ebanx::doExchange([
+		    'currency_code'      => $currencyCode
+		  , 'currency_base_code' => 'BRL'
+		]);
+		$totalReal = $order_total * number_format($currencyEbanx->currency_rate->rate, 2, '.', '');
 
 	    if (($totalReal / 20) < $maxInstallments)
 	    {
