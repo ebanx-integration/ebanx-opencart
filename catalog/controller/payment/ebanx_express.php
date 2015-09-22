@@ -217,7 +217,7 @@ class ControllerPaymentEbanxExpress extends Controller
 				          'name'              => $order_info['payment_firstname'] . ' ' . $order_info['payment_lastname']
 				        , 'document'          => preg_replace('/\D/', '', $this->request->post['ebanx']['cpf'])
 				        , 'birth_date'        => $this->request->post['ebanx']['dob']
-				        , 'email'             => time() . $order_info['email']
+				        , 'email'             => $order_info['email']
 				        , 'phone_number'      => $order_info['telephone']
 				        , 'currency_code'     => $this->config->get('config_currency')
 				        , 'amount_total'      => $order_info['total']
