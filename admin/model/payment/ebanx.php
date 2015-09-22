@@ -74,7 +74,6 @@ class ModelPaymentEbanx extends Model
     {
         foreach ($arr as $key => $value)
         {
-            var_dump($key);
             $this->_updateSetting($key, $value);
         }
     }

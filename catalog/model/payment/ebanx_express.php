@@ -35,29 +35,29 @@
  */
 class ModelPaymentEbanxExpress extends Model
 {
- 	public function getMethod($address, $total)
+  public function getMethod($address, $total)
   {
-		$this->language->load('payment/ebanx_express');
+    $this->language->load('payment/ebanx_express');
 
-		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$this->config->get('ebanx_express_geo_zone_id') . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
+    $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$this->config->get('ebanx_express_geo_zone_id') . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
 
-		if (!$this->config->get('ebanx_geo_zone_id') || $query->num_rows)
+    if (!$this->config->get('ebanx_geo_zone_id') || $query->num_rows)
     {
-			$status = true;
-		}
+      $status = true;
+    }
     else
     {
-			$status = false;
-		}
+      $status = false;
+    }
 
-		$method_data = array();
+    $method_data = array();
 
-		if ($status)
+    if ($status)
     {
       $method_data = array(
           'code'       => 'ebanx_express'
-        ,	'title'      => $this->language->get('text_title')
-				, 'sort_order' => $this->config->get('ebanx_express_sort_order')
+        , 'title'      => $this->language->get('text_title')
+        , 'sort_order' => $this->config->get('ebanx_express_sort_order')
       );
     }
 
@@ -70,16 +70,29 @@ class ModelPaymentEbanxExpress extends Model
    * @param string $paymentHash
    * @return  void
    */
-	public function setPaymentHash($orderId, $paymentHash)
+  public function setPaymentHash($orderId, $paymentHash)
   {
-		$this->db->query("INSERT INTO " . DB_PREFIX . "order_ebanx VALUES($orderId, '$paymentHash')");
-	}
+    $this->db->query("INSERT INTO " . DB_PREFIX . "order_ebanx VALUES($orderId, '$paymentHash')");
+  }
 
   public function updateTotalsWithInterest($data)
   {
-    $sql = "UPDATE `" . DB_PREFIX . "order_total` SET `text` = '" . $data['total_text'] . "', `value` = '" . $data['total_value'] . "'
+    $update = "UPDATE `" . DB_PREFIX . "order_total` SET `text` = '" . $data['total_text'] . "', `value` = '" . $data['total_value'] . "'
             WHERE `order_id` = '" . $data['order_id'] . "' AND `code` = 'total'";
-    $this->db->query($sql);
+
+    $insert = "INSERT INTO `" . DB_PREFIX . "order_total` (`order_id`, `code`, `title`, `text`, `value`, `sort_order`)
+              VALUES ('" . $data['order_id'] . "', 'ebanx_interest', 'Interest', '" . $data['interest_text'] . "', '" . $data['interest_value'] . "', '8')";
+
+    if(intval(VERSION) >= 2)
+    {
+      $update = "UPDATE `" . DB_PREFIX . "order_total` SET `value` = '" . $data['total_value'] . "'
+            WHERE `order_id` = '" . $data['order_id'] . "' AND `code` = 'total'";
+
+      $insert = "INSERT INTO `" . DB_PREFIX . "order_total` (`order_id`, `code`, `title`, `value`, `sort_order`)
+              VALUES ('" . $data['order_id'] . "', 'ebanx_interest', 'Interest', '" . $data['interest_value'] . "', '8')";
+    }
+
+    $this->db->query($update);
 
     // Insert interest rate if it was not inserted yet
     $sql = "SELECT order_total_id FROM `" . DB_PREFIX . "order_total` WHERE `order_id` = '" . $data['order_id'] . "' AND code = 'ebanx_interest'";
@@ -87,9 +100,7 @@ class ModelPaymentEbanxExpress extends Model
 
     if ($result->num_rows == 0)
     {
-      $sql = "INSERT INTO `" . DB_PREFIX . "order_total` (`order_id`, `code`, `title`, `text`, `value`, `sort_order`)
-              VALUES ('" . $data['order_id'] . "', 'ebanx_interest', 'Interest', '" . $data['interest_text'] . "', '" . $data['interest_value'] . "', '8')";
-      $this->db->query($sql);
+      $this->db->query($insert);
     }
 
     $sql = "UPDATE `" . DB_PREFIX . "order` SET `total` = '" . $data['total_value']. "' WHERE `order_id` = " . $data['order_id'];

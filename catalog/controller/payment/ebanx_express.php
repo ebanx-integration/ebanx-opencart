@@ -240,7 +240,7 @@ class ControllerPaymentEbanxExpress extends Controller
 			$params['payment']['payment_type_code'] = $this->request->post['ebanx']['cc_type'];
 
 			// Add interest to the order total
-			$interest    = $this->config->get('ebanx_installments_interest');
+			$interest    = $this->config->get('ebanx_express_installments_interest');
 			$order_total = ($order_info['total'] * (100 + floatval($interest))) / 100.0;
 			$params['payment']['amount_total'] = number_format($order_total, 2, '.', '');
 
