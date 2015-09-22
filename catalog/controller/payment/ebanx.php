@@ -199,7 +199,9 @@ class ControllerPaymentEbanx extends Controller
 		else
 		{
 			$this->_log('ERROR | Order: ' . $order_info['order_id'] . ', Error: ' . $response->status_message);
+			echo $response->status_message;
 		}
+		exit;
 	}
 
 	/**
