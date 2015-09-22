@@ -120,6 +120,7 @@ ul.ebanx-tef-info li label img.active {
                 <option value="amex">American Express</option>
                 <option value="diners">Diners</option>
                 <option value="discover">Discover</option>
+                <option value="hipercard">Hipercard</option>
                 <option value="elo">Elo</option>
                 <option value="mastercard">MasterCard</option>
                 <option value="visa">Visa</option>
