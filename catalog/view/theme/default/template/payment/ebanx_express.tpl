@@ -297,7 +297,7 @@ ul.ebanx-tef-info li label img.active {
         , beforeSend: function() {
             $('.payment > .warning').remove();
             $('#button-confirm').fadeToggle();
-            $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /> <?php echo $text_wait; ?></div>');
+            $('#payment').before('<div class="attention"><img src="image/ebanx/loading.gif" alt="" /> <?php echo $text_wait; ?></div>');
           }
         , complete: function() {
             $('#button-confirm').fadeToggle();

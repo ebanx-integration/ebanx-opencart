@@ -20,7 +20,7 @@
         , beforeSend: function() {
             $('.payment > .warning').remove();
             $('#button-confirm').fadeToggle();
-            $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /></div>');
+            $('#payment').before('<div class="attention"><img src="image/ebanx/loading.gif" alt="" /></div>');
           }
         , complete: function() {
             $('#button-confirm').fadeToggle();

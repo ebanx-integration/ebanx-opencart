@@ -57,6 +57,7 @@ class ModelPaymentEbanx extends Model
       $method_data = array(
           'code'       => 'ebanx'
         ,	'title'      => $this->language->get('text_title')
+        , 'terms'      => ''
 				, 'sort_order' => $this->config->get('ebanx_sort_order')
       );
     }
