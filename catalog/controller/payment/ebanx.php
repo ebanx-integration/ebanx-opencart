@@ -334,4 +334,7 @@ class ControllerPaymentEbanx extends Controller
     {
         return (intval(VERSION) >= 2);
     }
+
+    
+
 }

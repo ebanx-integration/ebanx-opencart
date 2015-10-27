@@ -86,14 +86,17 @@ class ControllerPaymentEbanxExpress extends Controller
 		$view['enable_installments'] = false;
 
 		// Order total with interest
-		$interest    = $this->config->get('ebanx_express_installments_interest');
-		$order_total = ($order_info['total'] * (100 + floatval($interest))) / 100.0;
-		$view['order_total_interest'] = $order_total;
+		$interest    = $this->config->get('ebanx_express_installments_interest');		
+		$order_total = $order_info['total']; 
 
 		// Enforce minimum installment value (R$20)
 		$maxInstallments = $this->config->get('ebanx_express_max_installments');
 		$currencyCode    = strtoupper($order_info['currency_code']);
 
+		for ($i=1; $i < $maxInstallments + 1; $i++) { 
+			$order_with_format = $this->calculateTotalWithInterest($order_total,$i) / $i;
+			$view['order_total_interest'][$i] = number_format($order_with_format, 2, ",", " ");
+		}
 		$currencyEbanx = \Ebanx\Ebanx::doExchange([
 		    'currency_code'      => $currencyCode
 		  , 'currency_base_code' => 'BRL'
@@ -159,6 +162,7 @@ class ControllerPaymentEbanxExpress extends Controller
 		$view['total_view']              = $this->currency->format($order_info['total'], $this->config->get('config_currency'), true, true);
 		$view['interest_view']           = $this->currency->format($order_total - $order_info['total'], $this->config->get('config_currency'), true, true);
 		$view['totalWithInterest']       = $this->currency->format($order_total, $this->config->get('config_currency'), true, true);
+		$view['terms'] = '';
 
   	    if ($info)
   	    {
@@ -241,8 +245,9 @@ class ControllerPaymentEbanxExpress extends Controller
 
 			// Add interest to the order total
 			$interest    = $this->config->get('ebanx_express_installments_interest');
-			$order_total = ($order_info['total'] * (100 + floatval($interest))) / 100.0;
-			$params['payment']['amount_total'] = number_format($order_total, 2, '.', '');
+			$installments = $this->request->post['ebanx']['installments'];
+			$order_total =  $this->calculateTotalWithInterest($order_info['total'],$installments);
+			$params['payment']['amount_total'] = $order_total;
 
 			// Save installments to total
 			$this->model_payment_ebanx_express->updateTotalsWithInterest(array(
@@ -470,5 +475,54 @@ class ControllerPaymentEbanxExpress extends Controller
 			$this->data     = $view;
 			$this->response->setOutput($this->render());
 		}
+	}
+
+	protected function calculateTotalWithInterest($orderTotal, $installments)
+	{
+	    switch ($installments) {
+	      case '1':
+	        $interest_rate = 1;
+	        break;
+	      case '2':
+	        $interest_rate = 2.30;
+	        break;
+	      case '3':
+	        $interest_rate = 3.40;
+	        break;
+	      case '4':
+	        $interest_rate = 4.50;
+	        break;
+	      case '5':
+	        $interest_rate = 5.60;
+	        break;
+	      case '6':
+	        $interest_rate = 6.70;
+	        break;
+	      case '7':
+	        $interest_rate = 7.80;
+	        break;
+	      case '8':
+	        $interest_rate = 8.90;
+	        break;
+	      case '9':
+	        $interest_rate = 9.10;
+	        break;
+	      case '10':
+	        $interest_rate = 10.20;
+	        break;
+	      case '11':
+	        $interest_rate = 11.11;
+	        break;
+	      case '12':
+	        $interest_rate = 12.22;
+	        break;
+	      default:
+	        # code...
+	        break;
+	    }
+
+	     $total = (floatval($interest_rate / 100) * floatval($orderTotal) + floatval($orderTotal));
+	  
+	    return $total; 
 	}
 }
