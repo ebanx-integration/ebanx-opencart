@@ -408,13 +408,13 @@ ul.ebanx-tef-info li label img.active {
         , type: 'post'
         , data: $('#payment select, #payment input[type=text], #payment input[type=radio]:checked')
         , beforeSend: function() {
-            $('.payment > .warning').remove();
+            $('#payment .warning').remove();
             $('#button-confirm').fadeToggle();
-            $('#payment').before('<div class="attention"><img src="image/ebanx/loading.gif" alt="" /></div>');
+            $('#payment').before('<div class="attention"><img src="catalog/view/theme/default/image/loading.gif" alt="" /></div>');
           }
         , complete: function() {
             $('#button-confirm').fadeToggle();
-            $('.payment > .attention').remove();
+            $('#payment').parent().find('.attention').remove();
           }
         , success: function(response) {
             // If the response is a URL, redirect to it
@@ -422,8 +422,8 @@ ul.ebanx-tef-info li label img.active {
               window.location = response;
             // Otherwise display an error message
             } else {
-              
-              $('.buttons').before('<div class="alert alert-danger">' + response + '</div>');
+              $('.buttons').before('<div class="alert alert-danger warning">' + response + '</div>');
+              $('#payment .attention').remove();
             }
           }
       });
