@@ -38,6 +38,7 @@ require_once DIR_SYSTEM . 'library/ebanx-php/src/autoload.php';
 
 class ControllerPaymentEbanxNotify extends Controller
 {
+	const VERSION = '2.4.0';	
 	var $integrationKey;
 	var $testMode;
 
@@ -63,6 +64,7 @@ class ControllerPaymentEbanxNotify extends Controller
 		    'integrationKey' => $this->integrationKey
 		  , 'testMode'       => $this->testMode
 		  , 'directMode'     => true
+  		  , 'sourceData'     => 'OpenCart/' . self::VERSION	
 		));
 	}
 	

@@ -37,6 +37,7 @@ require_once DIR_SYSTEM . 'library/ebanx-php/src/autoload.php';
  */
 class ControllerPaymentEbanxExpress extends Controller
 {
+	const VERSION = '2.4.0';
 	/**
 	 * Initialize the EBANX settings before usage
 	 * @return void
@@ -47,6 +48,8 @@ class ControllerPaymentEbanxExpress extends Controller
 		    'integrationKey' => $this->config->get('ebanx_express_merchant_key')
 		  , 'testMode'       => ($this->config->get('ebanx_express_mode') == 'test')
 		  , 'directMode'     => true
+  		  , 'sourceData'     => 'OpenCart/' . self::VERSION
+
 		));
 	}
 
